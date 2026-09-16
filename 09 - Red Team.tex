@@ -1,0 +1,83 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Objections and Responses}
+\label{sec:RedTeam}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% New in v04, per MN's flag on Sec. III-D: the "what would keep the
+% library small" material, plus the other standing objections, each
+% stated with a response. If the page budget demands it, this section
+% can be wrapped in \reviewonly{} and kept for the review build only.
+
+The argument of this paper has standing objections. We state the ones
+we consider strongest, each with our response.
+
+\textbf{(1) The library may stay small:} A probe trained on all
+domains jointly generalizes well in the same study that reports the
+non-transfer result~\cite{ying2026spectrum}, and a later analysis
+finds roughly 67\% of top attention heads shared between sycophancy
+and factual lying, with mean-difference directions on the shared
+subspace transferring at \auroc 0.83~\cite{pandey2026shared}. Deployed
+monitors are also already
+inexpensive~\cite{anthropic2025cheapmonitors}. If a compact shared
+basis covers a behavior suite, detection stays at small $K$ and a GPU
+is sufficient for it. \emph{Response:} That possibility does not reach
+the readout workloads, whose $K$ is set by the vocabulary rather than
+by how many behaviors share a direction, and it is the readout end of
+Fig.~1 of the main paper that the hardware argument addresses. Our own
+measurements also cut against a compact shared basis. On the
+ten-domain grid, the full-precision ceiling itself transfers poorly
+off-diagonal (0.705, against 0.928 in-domain), so the transfer gap is
+in the representations rather than in any compression this paper
+introduces; and giving the encoding \emph{more} capacity makes
+cross-domain transfer worse, not better -- growing the code from 384
+to 2{,}048 bits drops 23 of 90 off-diagonal cells by more than 0.05
+\auroc (main paper, Sec.~V-C). If transfer were limited by
+representational capacity, more bits should have helped; that they do
+not is consistent with behaviors wanting their own stored directions,
+i.e., with $K$ growing. That said, this is one model and one grid,
+and whether a shared basis suffices for a behavior suite remains an
+open empirical question; the analysis of this paper is conditional on
+the published trajectory continuing.
+
+\textbf{(2) Nobody searches a large library exhaustively:}
+Approximate indexes visit a small fraction of a bank and retrieve most
+true neighbors, at sub-millisecond query times over $10^{8}$ vectors
+on a GPU~\cite{indyk1998lsh,malkov2020hnsw,faisscuvs2025}.
+\emph{Response:} A monitored query stream is adversarial rather than
+independently drawn, and index structures with adversarial-query
+guarantees have been shown to cost a $\sqrt{Q}$ space
+factor~\cite{andoni2026robustann}; an exhaustive scan has no
+approximation error for an attacker to exploit. Neither observation
+settles the comparison, and the recall-under-adversarial-queries
+measurement is item (2) of the main paper's measurement plan (Sec.~VII-F).
+
+\textbf{(3) A datacenter GPU amortizes the bank read:} At batch 64
+the \qty{2.1}{\giga\byte} per layer per token becomes roughly
+\qty{34}{\mega\byte} per request, so a loaded node pays far less per
+request than the batch-1 arithmetic suggests. \emph{Response:}
+Correct, and the cost model of the main paper's Sec.~VII-F
+calls for the baseline at batch 1 \emph{and} batch 64 for this
+reason. A phone or a robot answering one request at a time has
+nothing to amortize against, which is why the edge crossings arrive
+one to two orders of magnitude earlier in $K$; and a co-resident
+monitor contends with live inference for cache and bandwidth, a term
+not yet in anyone's numbers.
+
+\textbf{(4) The compression is validated for detection, not for
+action:} The measured fidelity covers stored-signature
+\emph{matching}. A monitor that corrects behavior by steering would
+need full-precision, steering-grade directions, which the compressed
+bank does not carry. \emph{Response:} Agreed; that is why
+the main paper's Sec.~VII-B keeps the raw-bank arithmetic alongside
+the compressed one, and why detection -- flag and escalate -- is the
+claim this paper makes.
+
+\textbf{(5) The upper rungs are methods, not deployments:} Only
+$K=1$ runs in production; the $10^{2}$--$10^{3}$ rungs are
+measurements and an incident report, and the $10^{5}$ rung is a
+published readout method nobody has deployed as a monitor.
+\emph{Response:} Stated as such throughout (the arrow in
+Fig.~1 of the main paper is not a forecast), and the argument does not
+require the top rung: the libraries already in hand -- 520--1{,}000
+rows for four observed behaviors -- sit near the on-chip capacity
+cliff of an edge part (main paper, Sec.~VII-B), so the
+architectural question arrives before whole-vocabulary readout does.

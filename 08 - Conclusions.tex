@@ -1,0 +1,132 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Limitations and Conclusions}
+\label{sec:Conclusions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Limitations}
+\label{subsec:Limitations}
+Several qualifications apply to everything above.
+
+\textbf{What we have not built:} Nothing here competes with a deployed
+classifier, and no end-to-end jailbreak-blocking experiment was run. The
+measured claims concern the fidelity and cost of stored-signature
+matching, which is one component of the always-on stage described in
+Sec.~\ref{sec:Introduction}.
+
+\textbf{The label:} The experiments define deception as an output that
+contradicts the known correct output. Deception in the stronger sense --
+a model representing a claim as false while asserting it -- is harder to
+label, and the available datasets control for it imperfectly.
+
+\textbf{Granularity:} The grid results classify one activation per
+response rather than per token, while the deployment target the hardware
+serves is per-token and always-on. The watchlist reproduction of
+Sec.~\ref{subsec:Watchlist} is per-token, which is part of why it is
+reported here.
+
+\textbf{Layer choice and model coverage:} Layer 33 is a tuned
+hyperparameter of one model family at one scale, and re-tuning per model
+is assumed. All grid results are one model. Re-tuning is also what makes
+the bank a rewritten structure, which is why endurance appears in
+Table~\ref{tab:devices}.
+
+\textbf{Hardware numbers:} The comparison in Sec.~\ref{sec:Hardware} is
+capacity and bandwidth arithmetic on vendor figures, with no contention
+term for a monitor co-resident with live inference. The energy and
+latency entries of Table~\ref{tab:costmodel} are first-order estimates
+from literature values, not our measurements;
+Sec.~\ref{subsec:NextMeasurements} lists what would replace them.
+
+\textbf{Three metrics:} \auroc values in Sec.~\ref{sec:Results} are
+cross-domain on the ten-domain grid; the first pipeline's numbers in
+Sec.~\ref{subsec:FirstPipeline} are in-distribution on a four-domain
+grid under a different protocol; and the readout numbers in
+Sec.~\ref{sec:LargeK} are F1 and top-1 agreement against a
+full-precision reference rather than against labels. None of the three is
+comparable with the others cell by cell, and the paper does not place
+them side by side.
+
+\textbf{Digitized values:} the readout fidelity in
+Fig.~\ref{fig:jspace} was digitized from result charts rather than read
+from result files, and the library-size sweep carries three stated
+implementation limitations (Sec.~\ref{subsec:JspaceScaling}). Both
+should be regenerated from source before submission.
+
+\subsection{Conclusions}
+\label{subsec:Conclusions}
+Always-on behavioral monitoring of a language model is a library-search
+problem, and the variable that decides both its coverage and its cost is
+$K$, the number of stored signatures compared against each activation. At
+$K=1$, which is what is deployed today, the operation is nearly free and
+no special hardware is warranted. Published work gives reasons to expect
+$K$ to grow -- non-transfer across behaviors, steering wanting a
+direction per behavior per domain per layer, feature dictionaries, and
+whole-vocabulary readout, which fixes $K\!\approx\!10^{5}$ per layer by
+construction -- and also gives reasons to doubt it, which is why the
+question is worth measuring rather than asserting.
+
+One methodological result comes before the fidelity numbers. Accuracy
+alone does not establish that a memory-based detector is using its
+memory: across five variants of an earlier pipeline, 66--100\% of the
+accuracy of the two best-scoring configurations survived randomizing
+every stored row, so the trained front end was doing most of the
+classifying and the array was close to decoration. Reporting front-end
+share alongside \auroc separates the two, and it is what moved this work
+onto frozen projections.
+
+What a \cam-resident monitor gives up can then be measured, and we
+measure it on the two workloads at opposite ends of the range. For
+deception detection at $10^{2}$--$10^{3}$ labeled rows, a 384-bit code
+inside a plain array holds in-domain \auroc within 0.009 of
+full-precision cosine similarity on the raw 8{,}192 numbers, at 0.920
+(\signrp ternary) and 0.919 (thermometer) against 0.928; cross-domain,
+the same codes give up 0.065 and 0.127. At a matched 384 bits the
+ternary code is ahead of the thermometer code by 0.061 on average, which
+is the opposite of what a preference for the cheaper cell would predict
+and is the experiment we would run next at matched cell count rather
+than matched code length. A two-stage shortlist recovers most of the
+cross-domain gap in aggregate, but its fixed $k$ does not travel across
+bank sizes, which argues for a threshold criterion over a top-$k$ one in
+any array that has to serve banks of different sizes.
+
+For whole-vocabulary readout at $10^{5}$ rows per layer by construction,
+where the exact readout is its own ground truth and no labels are needed,
+a 3-bit Euclidean code at $\sim$$10^{3}$ storage bits per row -- a
+$128\times$ compression of an fp16 row -- reproduces 0.96 of the exact
+top-1 selections and 0.81 of the per-row firing decisions. Reporting the
+closest row survives compression better than reporting which rows cross a
+threshold, by 0.15--0.2 at every code width, which is a matchline-mode
+result rather than a cell-type one. Swept over library size, the bank
+stays alive to $10^{4}$ rows while per-row fidelity falls from 0.755 to
+0.43 -- and falls faster in full precision than at 3 bits, so what gets
+harder with $K$ is the discrimination rather than the arithmetic.
+
+On the cost side, monitoring traffic on a GPU crosses an H100's entire
+HBM bandwidth at $K\!\approx\!204$K and a Jetson-class part's at
+$K\!\approx\!17$K, while the same library at the measured code widths is
+6--\qty{33}{\mega\byte} per layer and fits on a die. A first-order
+estimate from literature figures puts the energy gap of the search
+itself at five to six orders of magnitude -- roughly 67~mJ per token
+per layer to stream the whole-vocabulary bank from HBM against
+0.03--0.3~$\mu$J to compare it in place -- of which a factor of 64 is
+the measured compression and the rest is the substrate
+(Sec.~\ref{subsec:CostModelGap}). A library that is inexpensive to
+hold and expensive to move is the condition under which searching it
+in place is worth the silicon. The remaining work is short and
+specific: Eva-CAM characterization at a stated node and a tuned GPU
+baseline to turn the estimates into measurements
+(Sec.~\ref{subsec:NextMeasurements}), and -- upstream of any hardware
+-- establishing the minimum $K$ that adequate behavioral coverage
+actually requires.
+
+\begin{pnote}
+Things I would add before submission, in order: {\bf (1)} the readout
+fidelity numbers regenerated from result files rather than digitized, and
+the library-size sweep re-run with the three fixes; {\bf (2)} the
+matched-cell-count ternary vs.\ thermometer experiment;
+{\bf (3)} the \textsc{est} entries of Table~\ref{tab:costmodel}
+replaced with Eva-CAM output and a measured GPU baseline; {\bf (4)} the full
+384 vs.\ 2{,}048-bit grids as figure panels; {\bf (5)} a second model,
+even a small one, so the deception grid is not single-model. Item 1 is
+the one a reviewer could actually catch us on.
+\end{pnote}

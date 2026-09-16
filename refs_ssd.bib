@@ -1,0 +1,376 @@
+% refs.bib — Task 3137.018 white paper. Every entry carries a URL so claims
+% can be checked directly.
+
+@inproceedings{rag,
+  author    = {Patrick Lewis and Ethan Perez and Aleksandra Piktus and others},
+  title     = {Retrieval-Augmented Generation for Knowledge-Intensive {NLP} Tasks},
+  booktitle = {NeurIPS},
+  year      = {2020},
+  note      = {\url{https://arxiv.org/abs/2005.11401}}
+}
+
+@inproceedings{dpr,
+  author    = {Vladimir Karpukhin and Barlas O{\u{g}}uz and Sewon Min and others},
+  title     = {Dense Passage Retrieval for Open-Domain Question Answering},
+  booktitle = {EMNLP},
+  year      = {2020},
+  note      = {Corpus convention: Wikipedia split into 100-word passages.
+               \url{https://arxiv.org/abs/2004.04906};
+               \url{https://aclanthology.org/2020.emnlp-main.550/}}
+}
+
+@misc{minilm,
+  author       = {{Sentence-Transformers}},
+  title        = {all-MiniLM-L6-v2 model card},
+  howpublished = {HuggingFace},
+  note         = {\texttt{max\_seq\_length} = 256; longer input is truncated.
+                  \url{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}}
+}
+
+@misc{chunksize,
+  title        = {Rethinking Chunk Size for Long-Document Retrieval: A Multi-Dataset Analysis},
+  howpublished = {arXiv:2505.21700},
+  year         = {2025},
+  note         = {Dense-retrieval quality saturates at $\sim$128--256-token chunks.
+                  \url{https://arxiv.org/abs/2505.21700}}
+}
+
+@misc{llamaindex,
+  author       = {{LlamaIndex}},
+  title        = {Evaluating the Ideal Chunk Size for a {RAG} System},
+  year         = {2023},
+  note         = {256/512-token chunks give the best faithfulness/relevancy balance.
+                  \url{https://www.llamaindex.ai/blog/evaluating-the-ideal-chunk-size-for-a-rag-system-using-llamaindex}}
+}
+
+@misc{menlo24,
+  author       = {{Menlo Ventures}},
+  title        = {2024: The State of Generative {AI} in the Enterprise},
+  year         = {2024},
+  note         = {RAG adoption 51\%, up from 31\% the prior year.
+                  \url{https://menlovc.com/2024-the-state-of-generative-ai-in-the-enterprise/}}
+}
+
+@misc{menlo25,
+  author       = {{Menlo Ventures}},
+  title        = {2025: The State of Generative {AI} in the Enterprise},
+  year         = {2025},
+  note         = {Enterprise GenAI spend estimates: \$1.7B (2023), \$11.5B (2024),
+                  \$37B (2025), $\approx$3.2$\times$ y/y.
+                  \url{https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/};
+                  press release: \url{https://www.globenewswire.com/news-release/2025/12/09/3202258/0/en/Menlo-Ventures-2025-State-of-Generative-AI-Report-Enterprise-Investment-Hit-37B-in-2025-Tripling-in-One-Year.html}}
+}
+
+@inproceedings{trentzsch2016,
+  author    = {M. Trentzsch and others},
+  title     = {A 28nm {HKMG} super low power embedded {NVM} technology based on ferroelectric {FETs}},
+  booktitle = {IEDM},
+  year      = {2016},
+  note      = {Endurance to $10^{5}$ cycles.
+               \url{https://ieeexplore.ieee.org/document/7838397}}
+}
+
+@inproceedings{duenkel2017,
+  author    = {S. D{\"u}nkel and M. Trentzsch and others},
+  title     = {A {FeFET} based super-low-power ultra-fast embedded {NVM} technology for 22nm {FDSOI} and beyond},
+  booktitle = {IEDM},
+  year      = {2017},
+  note      = {Program/erase endurance to $10^{5}$ in scaled cells.
+               \url{https://www.semanticscholar.org/paper/dc6239c0e3650926c5bbd023dec4f4121d9cc896}}
+}
+
+@inproceedings{tsmc2023mos2,
+  author    = {{TSMC}},
+  title     = {High-Endurance {MoS$_2$} {FeFET} with Operating Voltage Less than 1.8V},
+  booktitle = {IEDM, paper 11-1},
+  year      = {2023},
+  note      = {HZO-gated FeFET, measured endurance $>10^{12}$.
+               \url{https://iedm23.mapyourshow.com/mys_shared/iedm23/handouts/11-1_Tue_10993.pdf}}
+}
+
+@misc{imec2023,
+  author       = {{imec}},
+  title        = {imec improves ferroelectric response and endurance of {HZO}-based ferroelectric capacitors},
+  howpublished = {press release},
+  note         = {\url{https://www.imec-int.com/en/press/imec-improves-ferroelectric-response-and-endurance-hzo-based-ferroelectric-capacitors}}
+}
+
+@misc{hzobreakdown,
+  title        = {Breakdown-limited endurance in {HZO} {FeFETs}: mechanism and improvement under bipolar stress},
+  howpublished = {arXiv:2301.03742},
+  year         = {2023},
+  note         = {\url{https://arxiv.org/abs/2301.03742}}
+}
+
+@inproceedings{kim2016pcm,
+  author    = {W. Kim and others},
+  title     = {{ALD}-based confined {PCM} with a metallic liner toward unlimited endurance},
+  booktitle = {IEDM},
+  year      = {2016},
+  note      = {IBM; demonstrated $2\times10^{12}$ cycles.
+               \url{https://research.ibm.com/publications/ald-based-confined-pcm-with-a-metallic-liner-toward-unlimited-endurance}}
+}
+
+@misc{tsmc2024rram,
+  author       = {{TechInsights}},
+  title        = {{ISSCC} 2024 --- A ``Memory'' Day at the Conference},
+  year         = {2024},
+  note         = {TSMC 32Mb eRRAM in 12nm FinFET, 10K-cycle write endurance.
+                  \url{https://www.techinsights.com/blog/isscc-2024-memory-day-conference}}
+}
+
+@article{rramreview,
+  title   = {Advances of embedded resistive random access memory in industrial manufacturing and its potential applications},
+  journal = {Int.\ J.\ Extreme Manufacturing},
+  year    = {2024},
+  note    = {\url{https://doi.org/10.1088/2631-7990/ad2fea}}
+}
+
+@misc{everspin,
+  author       = {{Everspin Technologies}},
+  title        = {{STT-MRAM} Technology},
+  howpublished = {technology page},
+  note         = {Product endurance $>10^{10}$ cycles to BER specification;
+                  intrinsic endurance effectively unlimited.
+                  \url{https://www.everspin.com/spin-transfer-torque-mram-technology}}
+}
+
+@misc{tsmc2020emram,
+  author       = {{SemiWiki}},
+  title        = {{TSMC} 32Mb Embedded {STT-MRAM} at {ISSCC} 2020},
+  year         = {2020},
+  note         = {Reflow-capable eMRAM at the $10^{6}$-cycle endurance class.
+                  \url{https://semiwiki.com/semiconductor-manufacturers/tsmc/283868-tsmc-32mb-embedded-stt-mram-at-isscc2020/}}
+}
+
+@misc{tifram,
+  author       = {{Texas Instruments}},
+  title        = {{MSP430} {FRAM} Quality and Reliability (SLAA526)},
+  note         = {Production FRAM write endurance $10^{14}$--$10^{15}$ cycles.
+                  \url{https://www.ti.com/lit/pdf/slaa526}}
+}
+
+@misc{openrouter,
+  author       = {Malika Aubakirova and others},
+  title        = {State of {AI}: An Empirical 100 Trillion Token Study with {OpenRouter}},
+  howpublished = {arXiv:2601.10088},
+  year         = {2026},
+  note         = {Measured production traffic; sequence-length trend in Fig.~17
+                  ($\sim$1.9K late-2023 $\rightarrow$ $>$5.4K late-2025).
+                  \url{https://arxiv.org/abs/2601.10088}}
+}
+
+@misc{dlrm2019,
+  author       = {Maxim Naumov and others},
+  title        = {Deep Learning Recommendation Model for Personalization and Recommendation Systems},
+  howpublished = {arXiv:1906.00091},
+  year         = {2019},
+  note         = {Chooses dot-product interaction over concatenation explicitly to
+                  reduce dimensionality/parameters (Sec.~2.3).
+                  \url{https://arxiv.org/abs/1906.00091}}
+}
+
+@inproceedings{pkm,
+  author    = {Guillaume Lample and others},
+  title     = {Large Memory Layers with Product Keys},
+  booktitle = {NeurIPS},
+  year      = {2019},
+  note      = {\url{https://arxiv.org/abs/1907.05242}}
+}
+
+@misc{memorylayers,
+  author       = {Vincent-Pierre Berges and others},
+  title        = {Memory Layers at Scale},
+  howpublished = {arXiv:2412.09764 (Meta; ICML 2025)},
+  year         = {2024},
+  note         = {Memory layers replace FFNs with sparse key-value lookup; outperform
+                  dense models at $2\times$ compute. \url{https://arxiv.org/abs/2412.09764}}
+}
+
+@inproceedings{knnlm,
+  author    = {Urvashi Khandelwal and others},
+  title     = {Generalization through Memorization: Nearest Neighbor Language Models},
+  booktitle = {ICLR},
+  year      = {2020},
+  note      = {\url{https://arxiv.org/abs/1911.00172}}
+}
+
+@inproceedings{reformer,
+  author    = {Nikita Kitaev and {\L}ukasz Kaiser and Anselm Levskaya},
+  title     = {Reformer: The Efficient Transformer},
+  booktitle = {ICLR},
+  year      = {2020},
+  note      = {LSH attention. \url{https://arxiv.org/abs/2001.04451}}
+}
+
+@inproceedings{xnor,
+  author    = {Mohammad Rastegari and others},
+  title     = {{XNOR}-Net: ImageNet Classification Using Binary Convolutional Neural Networks},
+  booktitle = {ECCV},
+  year      = {2016},
+  note      = {\url{https://arxiv.org/abs/1603.05279}}
+}
+
+@misc{hashlayers,
+  author       = {Stephen Roller and others},
+  title        = {Hash Layers For Large Sparse Models},
+  howpublished = {arXiv:2106.04426 (NeurIPS 2021)},
+  year         = {2021},
+  note         = {Static hash routing competitive with learned MoE routing.
+                  \url{https://arxiv.org/abs/2106.04426}}
+}
+
+@article{esn,
+  author  = {Mantas Luko{\v{s}}evi{\v{c}}ius and Herbert Jaeger},
+  title   = {Reservoir computing approaches to recurrent neural network training},
+  journal = {Computer Science Review},
+  year    = {2009},
+  note    = {\url{https://doi.org/10.1016/j.cosrev.2009.03.005}}
+}
+
+@inproceedings{gupta2020,
+  author    = {Udit Gupta and others},
+  title     = {The Architectural Implications of {Facebook}'s {DNN}-Based Personalized Recommendation},
+  booktitle = {HPCA},
+  year      = {2020},
+  pages     = {488--501},
+  note      = {\url{https://arxiv.org/abs/1906.03109}}
+}
+
+@inproceedings{hercules,
+  author    = {Liu Ke and others},
+  title     = {Hercules: Heterogeneity-Aware Inference Serving for At-Scale Personalized Recommendation},
+  booktitle = {HPCA},
+  year      = {2022},
+  pages     = {141--154},
+  note      = {\url{https://arxiv.org/abs/2203.07424}}
+}
+
+@misc{ferec,
+  author       = {Subhasish Mukherjee and others},
+  title        = {{FeRec}: Endurance-Aware {IMC} for {DLRM} via Concatenation Architecture},
+  howpublished = {draft, SUPREME (SRC JUMP 2.0)},
+  year         = {2026},
+  note         = {In preparation; on file with the team.}
+}
+
+@misc{feednotflops,
+  author = {M. Niemier and S. Joshi and M. Bakir},
+  title = {Feed, not {FLOPS}: Packaging-Aware System--Technology Co-Optimization},
+  howpublished = {SRC SPARC 2027 concept paper (Topic 2: Advanced Packaging)},
+  year = {2026},
+  note = {June 30, 2026}
+}
+
+@article{nmars,
+  author = {M. Li and others},
+  title = {Accelerating recommendation systems with in-memory embedding operations},
+  journal = {IEEE Transactions on Circuits and Systems for Artificial Intelligence},
+  volume = {1},
+  number = {2},
+  pages = {244--256},
+  year = {2024}
+}
+
+@misc{ragmarket_gvr,
+  author       = {{Grand View Research}},
+  title        = {Retrieval Augmented Generation Market Size Report, 2030},
+  year         = {2025},
+  note         = {RAG market \$1.2B (2024) $\rightarrow$ \$11.0B (2030), 49.1\% CAGR
+                  2025--2030.
+                  \url{https://www.grandviewresearch.com/industry-analysis/retrieval-augmented-generation-rag-market-report}}
+}
+
+@misc{ragmarket_mm,
+  author       = {{MarketsandMarkets}},
+  title        = {Retrieval-Augmented Generation ({RAG}) Market -- Global Forecast to 2030},
+  year         = {2025},
+  note         = {Independent forecast: \$9.86B by 2030.
+                  \url{https://www.marketsandmarkets.com/Market-Reports/retrieval-augmented-generation-rag-market-135976317.html}}
+}
+
+@article{neurosim,
+  author  = {J. Lee and others},
+  title   = {{NeuroSim} v1.4: Extending Technology Support for Digital Compute-in-Memory Toward 1nm Node},
+  journal = {IEEE Trans. Circuits and Systems I: Regular Papers},
+  volume  = {71},
+  number  = {4},
+  pages   = {1733--1744},
+  year    = {2024},
+  note    = {CIM benchmarking framework from the Yu group (Georgia Tech).
+             \url{https://ieeexplore.ieee.org/document/10443264}}
+}
+
+@article{nvsim,
+  author  = {X. Dong and C. Xu and Y. Xie and N. P. Jouppi},
+  title   = {{NVSim}: A Circuit-Level Performance, Energy, and Area Model for Emerging Nonvolatile Memory},
+  journal = {IEEE Trans. Computer-Aided Design of Integrated Circuits and Systems},
+  volume  = {31},
+  number  = {7},
+  pages   = {994--1007},
+  year    = {2012},
+  note    = {\url{https://doi.org/10.1109/TCAD.2012.2185930}}
+}
+
+@misc{peer,
+  author       = {Xu Owen He},
+  title        = {Mixture of A Million Experts},
+  howpublished = {arXiv:2407.04153 (DeepMind)},
+  year         = {2024},
+  note         = {PEER: product-key retrieval over ${>}$1M tiny experts; extends the
+                  memory-layer primitive. \url{https://arxiv.org/abs/2407.04153}}
+}
+
+@misc{faiss,
+  author       = {Jeff Johnson and Matthijs Douze and Herv{\'e} J{\'e}gou},
+  title        = {Billion-Scale Similarity Search with {GPUs}},
+  howpublished = {arXiv:1702.08734; IEEE Trans. Big Data 2019},
+  year         = {2017},
+  note         = {FAISS: the tuned ANN baseline any CAM-search claim must beat.
+                  \url{https://arxiv.org/abs/1702.08734}}
+}
+
+@misc{flashattention,
+  author       = {Tri Dao and others},
+  title        = {{FlashAttention}: Fast and Memory-Efficient Exact Attention with {IO}-Awareness},
+  howpublished = {arXiv:2205.14135 (NeurIPS 2022)},
+  year         = {2022},
+  note         = {IO-aware exact attention; re-priced brute force vs.\ approximate
+                  attention on GPUs. \url{https://arxiv.org/abs/2205.14135}}
+}
+
+@misc{bitnet,
+  author       = {Shuming Ma and Hongyu Wang and others},
+  title        = {The Era of 1-bit {LLMs}: All Large Language Models are in 1.58 Bits},
+  howpublished = {arXiv:2402.17764 (Microsoft Research)},
+  year         = {2024},
+  note         = {BitNet b1.58: ternary-weight LLMs reported at parity with fp16 at
+                  3B+ scale. \url{https://arxiv.org/abs/2402.17764}}
+}
+
+@misc{expertchoice,
+  author       = {Yanqi Zhou and others},
+  title        = {Mixture-of-Experts with Expert Choice Routing},
+  howpublished = {arXiv:2202.09368 (NeurIPS 2022)},
+  year         = {2022},
+  note         = {Post-2021 learned routing that addresses the load-balance issues
+                  static hashing exploited. \url{https://arxiv.org/abs/2202.09368}}
+}
+
+
+@inproceedings{hofm,
+  author    = {Mathieu Blondel and Akinori Fujino and Naonori Ueda and Masakazu Ishihata},
+  title     = {Higher-Order Factorization Machines},
+  booktitle = {NeurIPS},
+  year      = {2016},
+  note      = {\url{https://arxiv.org/abs/1607.07195}}
+}
+
+@inproceedings{xdeepfm,
+  author    = {Jianxun Lian and others},
+  title     = {{xDeepFM}: Combining Explicit and Implicit Feature Interactions for Recommender Systems},
+  booktitle = {KDD},
+  year      = {2018},
+  note      = {Compressed interaction network: explicit higher-order feature
+               interactions. \url{https://arxiv.org/abs/1803.05170}}
+}

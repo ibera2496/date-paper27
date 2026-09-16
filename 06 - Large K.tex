@@ -1,0 +1,233 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Workload 2: Whole-Vocabulary Readout}
+\label{sec:LargeK}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% (1) what the method is and why its K is not a choice; (2) our in-house
+% reproduction at 8B, as a watchlist; (3) the cost of full readout;
+% (4) what would make it tractable, and which of those we have shown.
+
+This section evaluates the mappings on the second workload:
+whole-vocabulary readout, where the library is set by the model's
+vocabulary rather than by anyone's choices -- the
+$K\approx1.3\times10^{5}$ rung of Fig.~\ref{fig:ladder}. We describe
+the published method and why its $K$ is structural, report an
+in-house reproduction at watchlist scale with its measured fidelity
+at \cam precision, and price what full readout would cost a
+\cam-resident design against streaming the same bank from HBM.
+\inote[aiviolet]{Aug 31: section intro added per your ``frame this
+section like V'' note}
+
+\subsection{A workload whose $K$ nobody selected}
+\label{subsec:Jspace}
+The grids in Sec.~\ref{sec:Results} are representative of the
+$K\approx10^{2}$--$10^{3}$ regime, where the library grows with the
+number of behaviors somebody thinks to watch. A recently published
+readout method sets $K$ a different way. It reports that a model holds words ``in
+mind'' without emitting them, and that for every token in the vocabulary
+there is an internal pattern meaning that word is currently active,
+readable whether or not the word is ever
+said~\cite{anthropic2026workspace}. In the spider example of
+Sec.~\ref{sec:Introduction}, the word appears in neither prompt nor
+answer, and replacing the internal \emph{spider} pattern with the one
+for \emph{ant} changes the answer from eight to six. The same work
+reports that the readout catches misbehavior beyond the staged safety
+test: ``manipulation'' was active while a model produced falsified
+data during a pre-release audit.
+
+For our purposes the relevant property is structural rather than
+behavioral. Reading this space means comparing the internal state against
+one stored pattern \emph{per vocabulary token} -- roughly 128K signatures
+for a Llama-family tokenizer -- at several layers, every token. Nobody
+chose that library size; it falls out of the vocabulary. And it is
+plausibly a floor, since the published method tracks single words, and
+phrases would only enlarge the library.
+
+\subsection{An in-house reproduction, at watchlist scale}
+\label{subsec:Watchlist}
+We reproduced the readout in-house on Llama-3.1-8B: a layer-by-layer
+ranked list of what the model is currently representing. About 13 of 32
+layers carry a usable readout at this scale, which is the source of the
+``13--25 usable layers'' factor used in Sec.~\ref{sec:Scaling}. Each
+signature is precomputed offline, so a watched word costs one comparison
+per token, and we stored 47 deception-adjacent signatures per monitored
+layer as \cam rows.
+
+In a staged scenario in which the model is told it is about to be
+replaced and is given a personnel file it was not meant to use, ten watch
+words were tracked by exact full-vocabulary rank across the 2{,}048
+prompt tokens the model reads before generating anything. Five of them --
+``scandal,'' ``evidence,'' ``leaked,'' ``fake'' and ``shutdown'' --
+reached rank~0 at interpretable moments in the reading, ``threat''
+reached rank~1 and ``blackmail'' rank~2, and none of the ten appears in
+the prompt text.\inote[aiviolet]{corrected Aug 21: the v01 draft said
+three words at rank 0, which is how the number appears in every
+downstream deck. The 07-16-26 meeting notes are the source of record and
+say five, plus threat at 1 and blackmail at 2} The reply the model then produced was cooperative and
+unremarkable, i.e., not something a text classifier would score as
+harmful. Ground truth for the reproduction is the model's own
+full-precision readout, so no labeled deception data is required
+anywhere.
+
+These are preliminary numbers: one model, one staged scenario, ten watch
+words in the demonstration and 47 stored signatures.\footnote{Several of
+the fidelity and scaling values in this subsection were read from result
+charts rather than from result files; verification against the team's
+files is queued, and the scaling sweep re-runs with three known fixes
+before any of it is reused externally.}
+
+
+\subsection{Fidelity at \cam precision}
+\label{subsec:JspaceFidelity}
+The deception grid of Sec.~\ref{sec:Results} needs labeled activations.
+Readout does not: the full-precision, full-dimension dot product against
+the stored patterns \emph{is} the ground truth, so a compressed
+implementation can be scored directly against the exact readout it is
+trying to reproduce. Compression can therefore be measured here without
+labels, and the deception numbers of Sec.~\ref{sec:Results} are not
+assumed to carry over to it.
+
+The setup takes J-space vectors at a fixed layer, gathers residual-stream
+activations from Wikitext, records which stored vectors fire above a
+global threshold under the exact computation, and asks how well each
+\cam-compatible encoding reproduces that list. Two readouts are scored:
+\emph{threshold}, where every row that fires is reported and the metric
+is per-row firing F1, and \emph{top-1}, where the single closest row is
+reported and the metric is agreement with the exact readout's choice.
+The bank is 47 deception-adjacent vectors per layer, as in
+Sec.~\ref{subsec:Watchlist}.
+
+Fig.~\ref{fig:jspace}(a,b) plots both against storage bits per \cam
+row, which is the axis that connects fidelity to
+Sec.~\ref{sec:Hardware}: bits per row set the bank size, and the bank
+size sets what has to be held or moved. An uncompressed fp16 row at
+$d=8{,}192$ is 131{,}072 bits and reproduces the exact readout by
+definition. Three observations.
+
+\textbf{Two orders of magnitude of compression cost less than it might:}
+A 3-bit Euclidean code at $\sim$$10^{3}$ bits per row -- a $128\times$
+reduction -- reaches \hbox{0.96} top-1 agreement and 0.81 per-row firing
+F1. Keeping the projection in full precision and quantizing nothing but
+the width (the exact-$L_2$ series) reaches 1.00 top-1 at 2{,}048 bits and
+0.84 firing F1 at 4{,}096, so most of the remaining gap at $10^{3}$ bits
+is the quantizer rather than the projection.
+
+\textbf{The top-1 readout is markedly cheaper than the threshold
+readout:} At every code width the top-1 curve sits above the firing-F1
+curve, by 0.15--0.2 in the range that matters. Reporting \emph{which row
+is closest} survives compression better than reporting \emph{which rows
+cross a threshold}, because the first is a comparison among rows and the
+second is a comparison against an absolute value that quantization
+shifts. For a \cam this is a matchline-mode result: best-match mode
+tolerates a cheaper cell than threshold mode does, at equal fidelity.
+
+\textbf{Hamming and thermometer codes do not reach the same operating
+point here:} Both rise with code width to roughly 0.74 top-1 and 0.49
+firing F1 at $10^{3}$ bits, and the Hamming series then falls sharply at
+4{,}096 bits, where the encoding switches to a direct sign hash without a
+learned projection. That is the opposite ordering from
+Sec.~\ref{sec:Results}, where at a matched 384 bits the sign code was
+ahead. The two workloads are asking different questions -- separating two
+labeled classes there, reproducing a specific ranked list here -- and the
+metric a readout needs appears to be the one a multi-bit cell provides.
+Sec.~\ref{subsec:Devices} takes up what this would mean for the array
+if it survives the checks queued in
+Sec.~\ref{subsec:NextMeasurements}.
+\inote[aiviolet]{v03: per the v02 note, the design-space consequence of
+this disagreement now has its own paragraph in Sec.~VII-D, and the
+projection-artifact check is item (3) of the measurement plan in
+Sec.~VII-E}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=7.0in]{fig_jspace_v1.pdf}
+\caption{Whole-vocabulary readout reproduced through a \cam.
+(a) Per-row firing F1 and (b) top-1 agreement with the exact J-lens,
+against storage bits per \cam row, for a bank of 47 vectors per layer;
+the star marks an uncompressed fp16 row (131{,}072 bits), which
+reproduces the exact readout by definition. (c) Per-row macro F1 as the
+library grows from $10^{2}$ to $10^{4}$ tracked vectors at 124$+$4
+cells per row. Values digitized from the source deck; see the footnote
+in Sec.~\ref{subsec:JspaceFidelity} for the limitations that apply to
+panel~(c).}
+\label{fig:jspace}
+\end{figure*}
+
+\subsection{Fidelity as the library grows}
+\label{subsec:JspaceScaling}
+Compression fidelity at a 47-row bank does not establish anything about a
+$10^{5}$-row one, so the same pipeline was swept over library size.
+Fig.~\ref{fig:jspace}(c) reports per-row macro F1 from $K=10^{2}$ to
+$K=10^{4}$.\footnote{Panels (a) and (b) are digitized from the charts in
+the group's 07-30-26 result deck; the underlying result files were not
+available. Panel (c) is from the same deck and carries three limitations
+its author states: an epsilon-inside-square-root bug drove the $K=32$ and
+$K=320$ points to zero and they are dropped here; mean-token pooling was
+used by mistake, so the residual-stream vectors differ slightly from the
+per-token vectors a deployment would see; and \cam top-$k$ clipping is
+assumed away, i.e., a row that fires is taken to be selected. A re-run
+with all three fixed is queued.}
+
+Three things follow. \textbf{The library stays alive:} the fraction of
+rows that remain distinguishable is essentially 1.0 out to $10^{4}$
+tracked vectors for a trained projection, with a fixed SVD projection
+beginning to shed rows at about $10^{4}$ (to 0.88). Nothing collapses.
+\textbf{Per-row fidelity nonetheless degrades:} macro F1 falls from 0.755
+at $K=10^{2}$ to 0.43 at $K=10^{4}$ for the 3-bit trained projection.
+Against an always-fire baseline that drops from 0.10 to 0.005 over the
+same range, 0.43 is still nearly two orders of magnitude better than
+trivial, but it is not a fidelity anybody would deploy against.
+\textbf{The degradation is not a quantization artifact:} the
+full-precision projection degrades faster, from 0.69 to 0.30, and is
+overtaken by the 3-bit trained projection above $K\approx10^{3}$. What
+gets harder as the library grows is the discrimination, not the
+arithmetic, which is a result in favor of the compressed
+implementation rather than against it.
+
+In engineering terms, holding $10^{4}$ rows is not the problem and
+reading them faithfully is. That places the open work on the encoding
+and the readout mode rather than on the array, and it is the reason
+Sec.~\ref{sec:Hardware} prices capacity and traffic separately.
+
+\subsection{What full readout would cost}
+\label{subsec:ReadoutCost}
+Priced at 70B geometry, an uncompressed bank of 128K signatures at
+$d=8{,}192$, fp16, is \qty{2.1}{\giga\byte} per layer. Streaming that on
+every token at 1{,}000 tokens/s over 25 monitored layers is roughly
+\qty{53}{\tera\byte\per\second}, which is not a workload anyone runs. The
+useful part of the answer, however, stays small: only on the order of 25
+patterns are meaningfully active at any one time, so the operation is
+detection rather than readout -- scan everything, return the few that
+fired -- which is the question a threshold-mode \cam answers natively.
+
+Three things would make it tractable, in increasing order of what they
+require.
+
+\textbf{A watchlist:} Store the few hundred words already known to be
+worth watching, which drops $K$ by three orders of magnitude. Our 8B
+demonstration in Sec.~\ref{subsec:Watchlist} is this case. A watchlist
+catches only what somebody thought to list, and the words that matter
+most may be the ones nobody anticipated, so it is a first rung toward
+full readout rather than a substitute for it.
+
+\textbf{Threshold matching instead of ranking:} A \cam can report which
+rows are within $\tau$ without scoring the rest, and with roughly 25
+active patterns out of 128K nearly every query returns nothing.
+
+\textbf{Compressing the stored side:} At the code widths
+Sec.~\ref{sec:Results} measured, 384--2{,}048 bits per row against
+131{,}072 bits for an uncompressed fp16 row, the whole 128K bank is
+6--\qty{33}{\mega\byte} per layer (Fig.~\ref{fig:capacity}), which fits
+on a die. The requirement is that it not move. Only the first of the three has been
+demonstrated here; the other two are design arguments.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=3.4in]{fig_capacity_v1.pdf}
+\caption{Bank capacity per monitored layer against library size, for
+uncompressed fp16 rows and for the two code widths measured in
+Sec.~\ref{sec:Results}, with two on-chip capacity references. A
+whole-vocabulary bank at the measured code widths is
+6--\qty{33}{\mega\byte} per layer; the same bank uncompressed is
+\qty{2.1}{\giga\byte}.}
+\label{fig:capacity}
+\end{figure}

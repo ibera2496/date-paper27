@@ -1,0 +1,432 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Workload 1: Deception Detection}
+\label{sec:Results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Restructured Aug 31 per MN's markup: this section now holds ALL the
+% deception-detection evaluation -- the experimental setup and audit
+% moved here from Sec. IV, along with Table II (tab:audit) and the
+% first pipeline's four-domain results.
+
+We first evaluate the mappings of Sec.~\ref{sec:Mapping} on a
+deception detection workload, where the
+library is set by how many behaviors and domains someone decides to
+watch\inote[aiviolet]{Sep 2: your inserts (``a,'' ``workload'') and
+the cut of ``on the first of the paper's two workloads:'' applied.
+Applying your strikes on ``This section''/``evaluates'' literally
+leaves no subject or verb, so the opener is ``We first evaluate,''
+taking the ``We 1st'' you wrote above the heading as the cue --
+rewrite if you meant something else} -- here, the $K\approx10^{2}$--$10^{3}$ regime of
+Fig.~\ref{fig:ladder}. We describe the experimental setup, then
+report {\bf (1)} the ten-domain fidelity of each encoding, {\bf (2)}
+whether wider codes improve cross-domain transfer, {\bf (3)} how the
+two-stage shortlist behaves across bank sizes, and {\bf (4)} the
+destroyed-vector audit that disciplines every configuration reported.
+Sec.~\ref{sec:LargeK} evaluates the other end of the $K$ axis, where
+the library is set by the vocabulary.\inote[aiviolet]{Sep 2: the
+``One may reasonably ask why we evaluate at small $K$'' paragraph
+(added last round) is deleted per your full strike. Your pink box
+next to it -- whether Truthfulness connects to VLA, or to fall back
+on the established-dataset argument, or drop the question -- is
+parked for a conversation rather than answered in the text; happy to
+brainstorm it in chat whenever}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=7.0in]{fig_grids_v2.pdf}
+\caption{Cross-domain \auroc, Llama-3.3-70B-Instruct activations at
+layer 33. Rows index the domain whose examples are stored in the bank,
+columns the domain the held-out test activations come from. Top row,
+four-domain published protocol: (a) the full-precision Truthfulness
+Spectrum baseline~\cite{ying2026spectrum} as reproduced in our
+evaluation; (b) the first-pipeline Euclidean configuration -- 128-d
+learned projection, 3-bit LSQ rows, Euclidean matchline
+(Sec.~\ref{subsec:FirstPipeline}) -- scored only on datasets shared
+with (a); (c) the cell-wise change, (b) minus (a). Bottom row,
+ten-domain protocol: (d) 384-bit \signrp ternary code, requiring a
+wildcard-capable \tcam cell; (e) 384-bit thermometer code, requiring
+only a plain binary \cam cell; (f) Hamming shortlist over the whole
+bank followed by exact cosine rerank on raw activations, i.e., a
+full-precision ceiling for the same data and protocol. The two
+protocols use different datasets and splits and are not comparable
+cell by cell.}
+\label{fig:grids}
+\end{figure*}
+
+\subsection{Experimental setup}
+\label{subsec:Setup}
+Our evaluation case follows the cross-domain protocol of the
+Truthfulness Spectrum study~\cite{ying2026spectrum}: a model produces
+honest and deceptive statements across several subject-matter
+domains, its activations are recorded, and a detector built from one
+domain's examples is scored on every other domain's -- the ``stress
+test'' of Sec.~\ref{subsec:Probes}. Activations are taken from
+Llama-3.3-70B-Instruct~\cite{llama3herd}. The evaluation grid has ten
+domains:
+definitional, evidential, fictional, logical, ethics, sycophancy,
+\texttt{repe\_honesty}, roleplay, insider trading, and sandbagging. The
+first four plus sycophancy correspond to the published
+grid~\cite{ying2026spectrum}; \texttt{repe\_honesty} follows the
+representation-engineering dataset~\cite{zou2023repe}. Within each
+domain, 70\% of examples form the stored bank and 30\% are held out for
+test. Every cell of the grid is a cross-domain measurement: rows index
+the domain whose examples are in the bank, columns the domain the test
+activations come from. Bank sizes differ substantially by domain, from
+831 rows (definitional) to 3{,}201 (sycophancy), which turns out to
+matter in Sec.~\ref{subsec:Shortlist}. Activations are read at layer
+33: the source study selected that layer (with logistic-regression
+probes on average-token activations) from a cross-domain tuning sweep
+on its truth-type datasets, and we inherit the choice so our grids
+can be compared against theirs -- i.e., it is a tuned choice for this
+model family and scale rather than a transferable constant. All
+numbers reported below are from cluster runs on this
+configuration.\inote[aiviolet]{Sep 1, per your ``more tutorial in
+nature'' note (and the page-4 ``have we even mentioned layer 33''
+note, resolved as one fix): the subsection now opens by introducing
+the evaluation case, and layer 33 arrives later in the paragraph with
+the why -- inherited from the source study's tuning, per their
+Sec.~3. Sec.~IV-B now points here instead of introducing the layer
+itself}
+\dt[confirm with I. Bera before submission: (1) that ``evidential'' is
+the same dataset the published grid calls ``empirical,'' and likewise
+ethics/ethical, roleplay/roleplaying and insider\_trd/insider\_trading
+(the published five truth types are
+definitional/empirical/fictional/logical/ethical); (2) whether the
+ternary dead zone was actually enabled in the 384-bit runs, or whether
+the code was binary in practice and ``ternary'' is a label carried over
+from the table headers]{}
+
+\subsection{The grids}
+\label{subsec:Grids}
+\inote[aiviolet]{Sep 1: the ``measurements here are representative of
+the $K\approx10^{2}$--$10^{3}$ rungs'' recap that opened this
+subsection is cut per your ``Redundant? Can probably cut'' -- the
+reworked section intro above carries it}
+
+Fig.~\ref{fig:grids}(d)--(f) shows the ten-domain cross-domain grids
+for the two single-stage encodings and for the exact-rerank ceiling;
+Table~\ref{tab:encodings} summarizes them alongside the hardware each
+requires. Each grid is read the same way: a row names the domain
+whose examples are stored in the bank, a column the domain the
+held-out test activations come from -- i.e., a cell scores a bank
+built on behavior/domain $X$ against test material from
+$Y$.\inote[aiviolet]{Sep 2, your (E): the how-to-read sentence, kept
+to one sentence since the cross-domain observation below already
+explains the off-diagonal reading (your note that (E) is partly
+covered there)} The top row of the same figure places the published
+four-domain baseline and the first-mapping Euclidean grid
+(Sec.~\ref{subsec:FirstPipeline}) above them for reference; the two
+protocols differ in datasets and splits, so the rows of the figure are
+not comparable cell by cell.\inote[aiviolet]{Sep 1, your ``why is our
+Fig.~2(d)--(f) richer than Fig.~2 in Truthfulness.pdf'': expected,
+not a data slip. Their Fig.~2 trains probes on only seven of their
+datasets (five truth types + sycophancy + expectation-inverted) and
+tests on ten -- roleplaying, insider trading, and sandbagging are
+test-only columns for them, since those on-policy benchmarks have no
+probe-training split. Our banks are stored labeled exemplars, so a
+bank can be built from \emph{any} labeled dataset, and our grid
+legitimately has bank rows theirs lacks. Still queued for I.~Bera:
+confirm the combined data feeding (d)--(f) is the current run, and
+the evidential/ethical naming flag in
+Sec.~V-A}\inote[aiviolet]{Sep 2, your ``do we need to repeat/discuss
+both rows -- let's game this out'': no figure change made this pass.
+The tradeoff: (a) repeats Ying et al.\ and (c) is derivable from
+(a)$-$(b), so both are cuttable; (b) is our own Euclidean pipeline
+run on their protocol, with no analog in their paper. A middle path
+is a top row of just (b). Parked for your call}
+
+The top row also scores the first mapping on its own terms. Against
+the published four-domain baseline, in-distribution \auroc was
+1.00/0.99/1.00/0.95 versus the paper's 1.00/1.00/1.00/0.95, the
+average cell-wise gap over the full grid was $-0.03$, and the single
+worst cell lost 0.09 (combined training, tested on empirical) --
+panels (a)--(c) of Fig.~\ref{fig:grids}.\footnote{Those values are
+in-distribution \auroc on a four-domain grid and a different protocol
+from the ten-domain grid below; Fig.~\ref{fig:grids} keeps the two
+protocols in separate rows, and they are not comparable cell by
+cell.}\inote[aiviolet]{moved here from old Sec.~IV-A per your
+restructure. Standing question from Aug 28: this text matches the
+uGrads' deck (mean gap $-0.03$, worst $-0.09$); the Aug 14 methods
+document said $-0.06$ / within 0.05 -- worth asking which run is
+current}
+
+We make three observations on the ten-domain grids.
+
+\textbf{In-domain fidelity is essentially unaffected by the encoding:}
+When a bank is tested on the domain it was built from, the compressed
+codes give up almost nothing: the diagonal means are 0.920 (\signrp
+ternary, 384~b) and 0.919 (thermometer, 384~b), against 0.928 for the
+exact rerank. Said differently, replacing full-precision cosine
+similarity over the raw 8{,}192 values with a 384-bit code in a plain
+array costs 0.008--0.009 \auroc. The factual block (definitional,
+evidential, fictional -- all nine cells, transfer included) averages
+0.974 for ternary and 0.942 for thermometer, against the 0.978
+ceiling.\inote[aiviolet]{Sep 2: rewritten in plain English per your
+note, voice rules applied; every number unchanged}
+
+\textbf{Cross-domain fidelity is where compression shows, and it
+separates the two encodings:} An off-diagonal cell scores a bank
+built from one domain against test examples from another, so it
+measures how well a stored library transfers to material it was not
+built from. That transfer is where the encodings pay: off-diagonal
+means are 0.640 for ternary and 0.579 for thermometer, against 0.705
+for the full-precision ceiling -- a cost of 0.065--0.126 \auroc,
+where in-domain the same compression cost less than 0.01. The
+ordering is the surprise. At this matched 384-bit point, ternary is
+ahead of thermometer by 0.061 \auroc on average and in 63 of 90
+cells, which is the opposite of what a preference for the cheaper
+cell would predict. One caveat keeps the question open: the
+comparison is matched in \emph{bits} but not in \emph{silicon},
+since a ternary cell needs wildcard capability. If a ternary position
+really costs two bits of hardware, a matched-silicon comparison would
+give thermometer roughly twice the code length; that experiment has
+not been run.
+\dt[this is the paragraph to argue about. Options: (1) report both and
+leave it open, as drafted; (2) run the matched-cell-count experiment
+first and lead with whichever wins; (3) lead with thermometer on the
+hardware-simplicity argument and footnote the ternary advantage. I would
+pick (2) if there is student time before the deadline, since a reviewer
+will ask exactly this]{}
+
+\textbf{The pattern of failure reproduces the published one:} All three
+grids keep the factual block high and put sycophancy near chance from
+every other row, which is the qualitative result the source study
+reports~\cite{ying2026spectrum}. Sycophancy's own in-domain cell is the
+weakest diagonal entry in every configuration (0.627, 0.633, 0.636),
+stable across conditions, so it appears to be a property of the data
+rather than a compression artifact. The weakest off-diagonal cell sits
+at a similar depth in every configuration (0.259, 0.226, 0.220) but
+its \emph{location} moves with the encoding:
+\texttt{repe\_honesty}~$\to$~sandbagging for ternary,
+logical~$\to$~insider trading for thermometer, and
+\texttt{repe\_honesty}~$\to$~fictional for the rerank
+configurations. The bigger picture is that the accuracy ceiling on
+transfer is set by the representations, not by our compression -- the
+full-precision grid has the same holes, in the same places. Covering
+a behavior suite at this accuracy therefore means storing directions
+for each behavior and domain rather than hoping one direction
+travels, i.e., operating at the library scale this paper
+prices.\inote[aiviolet]{Aug 28: sanity check against the
+plotted arrays, per your student's flag. The earlier text claimed
+repe$\to$fictional was the worst cell in every configuration; the
+\emph{values} 0.259/0.226/0.220 are each configuration's minimum, but
+the cell differs for ternary and thermometer. Every other quoted
+statistic in this section verified against the arrays to the stated
+precision. CLOSED Aug 28 night against his source files: all four
+plotted grids match the methods document cell-for-cell (zero
+differences in all 400 cells), and the transposed comparison fails in
+all 90 off-diagonal cells per grid, so there is no train/test
+transposition -- the figure plots his data exactly. His document's own
+min/max/mean lines also agree with every aggregate quoted here, and it
+names repe$\to$fictional as the min driver only for the two rerank
+grids, consistent with the corrected text above}
+
+\inote[aiviolet]{Aug 28: the top row is the ``all of this in 1
+figure'' request. Values transcribed cell-by-cell from slide 4 of the
+uGrads' deck (Gisiner/Haidinger/Whalen); every cell was present, so no
+white placeholder squares were needed. The $\Delta$ panel recomputed
+from (a) and (b) matches the deck's printed $\Delta$ in all 20 cells,
+a consistency check on the transcription. Panel (b) is the same 3-bit
+LSQ Euclidean pipeline Sec.~IV-B describes -- its diagonal
+1.00/0.99/1.00/0.95 matches the values quoted there. Cut (c) if the
+figure needs to shrink; (a) and (b) carry the claim}
+
+\begin{table}[t]
+\centering
+\caption{The encodings, their measured fidelity on the ten-domain grid,
+and what each needs from a cell. Bank size is for a 4{,}000-row exemplar
+bank at the given code width. The in-domain minimum is sycophancy in
+every row (0.627 / 0.633 / 0.640 / 0.636 top to bottom); the
+cross-domain minimum is 0.259 / 0.226 / 0.219 / 0.220 top to bottom,
+and its cell location varies by encoding
+(Sec.~\ref{subsec:Grids}).}
+\label{tab:encodings}
+{\scriptsize\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lccll@{}}
+\toprule
+\textbf{Encoding} & \textbf{in-dom.} & \textbf{cross-dom.} &
+\textbf{Cell needed} & \textbf{Bank} \\
+ & mean & mean & & (4K rows) \\
+\midrule
+\signrp ternary, 384\,b       & 0.920 & 0.640 & \tcam, $\sim$16T   & 192\,kB \\
+Thermometer, 384\,b           & 0.919 & 0.579 & BCAM, $\sim$6--10T & 192\,kB \\
+Shortlist $+$ rerank          & 0.928 & 0.671 & BCAM $+$ FP unit   & 192\,kB $+$ raw \\
+Exact rerank (ceiling)        & 0.928 & 0.705 & FP baseline        & 65\,MB \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Cross-domain transfer is hard, and wider codes do not
+close the gap}
+\label{subsec:BitWidth}
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.4in]{fig_bitwidth_v1.pdf}
+\caption{The cost of a wider code, cell by cell: the change in
+cross-domain \auroc as the \signrp ternary code grows from 384 to
+2{,}048 bits (red is fidelity lost; off-diagonal cells losing more
+than 0.05 are outlined). The diagonal is flat to slightly positive
+while the transfer losses concentrate in the rows already weakest at
+384 bits, so the extra capacity sharpens domain-specific boundaries
+rather than helping them travel (Sec.~\ref{subsec:BitWidth}).}
+\label{fig:bitwidth}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=7.0in]{fig_shortlist_v1.pdf}
+\caption{Why a fixed shortlist size is a hardware problem.
+(a) Coverage: how often the true full-precision top-1 neighbor is inside
+the $k=400$ Hamming shortlist, for two banks that differ by
+$\sim$4$\times$ in size, with each bank's chance floor $k/N$ marked.
+(b) Cross-domain mean \auroc as $k$ grows as a fraction of each domain's
+own bank. Recovery is real but costs most of the bank.}
+\label{fig:shortlist}
+\end{figure*}
+The transfer gap of Sec.~\ref{subsec:Grids} raises the natural
+question of whether more code capacity would close it -- and the
+answer matters, because if it does not, covering more behaviors means
+storing \emph{more} comparison vectors rather than wider ones, i.e.,
+growing $K$. Widening the code should tighten the angle estimate in
+Eq.~(\ref{eq:signrp}) and improve matching, and in-domain it does.
+Cross-domain it does not, in either encoding.\inote[aiviolet]{Aug 31:
+reframed per your bottom-margin note (``cross-domain transfer is hard
+so we need more comparison vectors''). No push-back on the substance
+-- it is the same argument the red-team appendix already makes -- but
+I kept the claim conditional on this one model and grid, as objection
+(1) requires} Growing the code from 384
+to roughly 2{,}048 bits, 23 of 90 off-diagonal cells drop by more than
+0.05 \auroc for the ternary code, with a worst single-cell change of
+$-0.303$ (sandbagging tested on insider trading); for the thermometer
+code the same growth moves 12 of 90 cells by more than 0.05, worst
+$-0.209$. Fig.~\ref{fig:bitwidth} maps the change cell by cell for the
+ternary code: the diagonal is flat or slightly up, the losses
+concentrate in the rows that transfer worst at 384 bits
+(\texttt{repe\_honesty}, sandbagging, sycophancy), and the one column
+that improves broadly -- insider trading -- is a domain, not the
+encoding, getting easier to hit.
+
+A plausible reading is that extra dimensions preserve more of the
+geometry of the training domain, including the parts that do not
+generalize, so a wider code is a more faithful encoding of a
+domain-specific decision boundary. Whatever the mechanism, the
+takeaway for hardware is simple: {\bf (1)} the cheaper array is also
+the one that transfers better -- on this grid, the costlier cell does
+not buy accuracy -- so there is no argument for
+paying more silicon per row; and {\bf (2)} if transfer must come from
+somewhere, it comes from storing more vectors, not wider ones --
+which is the library growth Sec.~\ref{sec:Scaling} prices.
+
+\inote[aiviolet]{Aug 28 night, from the student's files: the 2{,}048-bit
+\emph{ternary} grid exists (slide 2 of his older deck; saved as
+ternary2048.npy), so this $\Delta$ figure per your pick; the worst cell
+is sandbagging$\to$insider at $-0.303$, now named in the text. The
+2{,}048-bit \emph{thermometer} grid is still aggregate-only (12/90,
+$-0.209$). One count note: my recount from his 3-decimal grids gives
+24 cells past $-0.05$, not 23 -- two cells sit at exactly $-0.051$
+(ethics$\to$evidential, syco$\to$roleplay) -- so his 23 presumably
+comes from unrounded data; text keeps his count, and the figure
+outlines 24}
+
+\subsection{A fixed shortlist does not travel across bank sizes}
+\label{subsec:Shortlist}
+The two-stage variant of Sec.~\ref{subsec:TwoStage} is the natural way
+to recover the ceiling, and at first reading it works: with an absolute
+shortlist of $k=400$, the diagonal mean is unchanged at 0.928 and the
+off-diagonal mean falls only from 0.705 to 0.671. The aggregate hides a
+failure of a \emph{fixed} parameter, which matters more for a hardware
+design than for a software one.
+
+Bank sizes differ by roughly $4\times$ across domains, from 831 rows
+(definitional) to 3{,}201 (sycophancy). Fig.~\ref{fig:shortlist}(a)
+measures coverage: how often the true full-precision top-1 neighbor
+actually lands inside the Hamming shortlist. For the definitional bank
+the mean is 82.5\%, against a chance floor of $k/N = 48.1\%$. For the
+sycophancy bank the mean is 18.3\% against a floor of 12.5\%, i.e.,
+barely above chance, and several test domains sit at or below their own
+floor. Consequently, 8 of the 10 training rows are stable between $k=400$
+and full precision while the sycophancy row loses 0.204 \auroc on
+average and up to 0.468 in a single cell; the ethics row shows a smaller
+version of the same effect at $-0.079$.
+
+Fig.~\ref{fig:shortlist}(b) shows this is a sizing problem rather than a
+broken mechanism. Sweeping $k$ as a fraction of each domain's own bank,
+sycophancy's cross-domain mean recovers from 0.532 at 12.5\% to 0.736 at
+100\%, mostly monotonically, and the 100\% value matches the
+independently computed full-precision row average to three decimal places
+(0.736 vs.\ 0.736; definitional 0.750 vs.\ 0.751), which is a useful
+self-consistency check on the pipeline. The recovery costs 75--100\% of
+the bank, at which point it is not a shortlist. For a \cam-resident
+design, that argues for the single-stage encodings above, or for a
+threshold rather than a top-$k$ criterion so the number of survivors
+adapts to the bank instead of being fixed at design time.
+
+\subsection{The destroyed-vector audit}
+\label{subsec:Audit}
+\label{subsec:AuditResults}
+\begin{table}[t]
+\centering
+\caption{The destroyed-vector audit across five variants of the first
+pipeline (July 30). Front-end share is the accuracy still present after
+every stored row is replaced by a random vector, i.e., the share the
+trained layers were carrying alone. High is bad: 100\% means the memory
+contributed nothing. This audit is our sanity check that a pipeline is
+not ``cheating,'' i.e., classifying in a trained front end rather than
+in the stored bank; we run it on every configuration reported in this
+paper.}
+\label{tab:audit}
+{\footnotesize
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Variant} & \textbf{Front-end share} & \textbf{Outcome} \\
+\midrule
+Learned binary hash          & 98--100\% & retired \\
+Weighted thermometer         & 66--85\%  & retired \\
+3-bit LSQ, Euclidean         & 24--28\%  & survives \\
+Direct sign, no projection   & 20\%      & survives \\
+Random sign projection       & 4--14\%   & survives \\
+\bottomrule
+\end{tabular}}
+\end{table}
+Any pipeline of the form ``trained front end, then memory'' can pass
+its accuracy test while the memory contributes nothing. We therefore
+re-measure every configuration with the stored rows replaced by random
+vectors of the same shape: a \cam-based detector should collapse to
+chance when the bank is destroyed, and if it does not, whatever sits
+in front of the array was doing the classification. We report the
+accuracy that survives destruction as the \emph{front-end share},
+where high is bad: 100\% means the memory was decoration.
+
+The audit has changed decisions. Table~\ref{tab:audit} reports it
+across five variants of the first pipeline
+(Sec.~\ref{subsec:FirstPipeline}). In the two highest-scoring
+variants, one of which reached 0.993 \auroc, between 66\% and 100\%
+of the accuracy survived randomizing every stored row: the trained
+layers in front of the array were performing most of the
+classification, and the \cam was close to decoration. Both were
+retired. The 3-bit LSQ Euclidean configuration sits at 24--28\%, so
+its memory is contributing; the variants whose stored rows carry
+nearly everything are the ones with a frozen or absent projection, at
+4--20\%, which is why the encodings of Secs.~\ref{subsec:SignRP}
+and~\ref{subsec:Thermometer} use frozen projections -- with nothing
+trained in front of the array, the failure has nowhere to occur.
+
+The encodings reported above pass. Randomizing every stored
+activation collapses the \signrp grid to a mean of 0.50, with 83\%
+of cells between 0.4 and 0.6, so the classification is coming from
+what is stored rather than from anything in front of the array. An
+accuracy number alone would not have separated the five variants of
+Table~\ref{tab:audit} -- the highest-scoring one was the worst
+offender. As such, we now run the audit by default on every
+configuration, report front-end share alongside \auroc, and treat a
+variant whose accuracy survives bank destruction as an accelerator
+result rather than a memory result. The recombined design of
+Sec.~\ref{subsec:PathBack} should pass this audit by construction --
+nothing is trained ahead of its array -- and will be checked the
+same way when it is run.
+
+\inote[aiviolet]{Aug 28 night: verified against the full audit grid in
+the student's older deck (slide 3) -- mean 0.504, 83.0\% of cells in
+[0.4, 0.6], so the quoted figures are exact. That grid is the
+2{,}048-bit configuration, though, so the standing question is
+narrower but still open: confirm the audit was also run at 384 bits,
+or say ``at 2{,}048 bits'' in this sentence}

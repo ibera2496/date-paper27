@@ -1,0 +1,376 @@
+% ============================================================
+%  refs.bib -- DATE draft: in-memory search for LLM behavior monitoring
+%
+%  Block 1 (monitoring / interpretability / ANN) is carried over verbatim
+%  from the IV briefing deck's refs.bib, where every entry was checked
+%  against the source and carries a url.
+%  Block 2 (CAM, devices, quantization, datasets) was added for this
+%  paper and has NOT been through the same check -- see the \dt flag in
+%  the driver file.
+% ============================================================
+
+% ---------- block 1: carried over from the deck ----------
+@article{ying2026spectrum,
+  author  = {Z. J. Ying and S. Ravfogel and N. Kriegeskorte and P. Hase},
+  title   = {The Truthfulness Spectrum Hypothesis},
+  journal = {arXiv preprint arXiv:2602.20273},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2602.20273}
+}
+@misc{anthropic2026workspace,
+  author       = {{Anthropic}},
+  title        = {A Global Workspace in Language Models},
+  howpublished = {Anthropic research},
+  year         = {2026},
+  note         = {July 6, 2026},
+  url          = {https://www.anthropic.com/research/global-workspace}
+}
+@article{ccpp2026,
+  author  = {{Anthropic}},
+  title   = {Constitutional Classifiers++: Efficient Production-Grade Defenses against Universal Jailbreaks},
+  journal = {arXiv preprint arXiv:2601.04603},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2601.04603}
+}
+@misc{anthropic2026ccblog,
+  author       = {{Anthropic}},
+  title        = {Next-Generation Constitutional Classifiers},
+  howpublished = {Anthropic research},
+  year         = {2026},
+  url          = {https://www.anthropic.com/research/next-generation-constitutional-classifiers}
+}
+@article{cc2025,
+  author  = {M. Sharma and others},
+  title   = {Constitutional Classifiers: Defending against Universal Jailbreaks},
+  journal = {arXiv preprint arXiv:2501.18837},
+  year    = {2025},
+  url     = {https://arxiv.org/abs/2501.18837}
+}
+@article{gemini2026probes,
+  author  = {{Google DeepMind}},
+  title   = {Building Production-Ready Probes for Gemini},
+  journal = {arXiv preprint arXiv:2601.11516},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2601.11516}
+}
+@misc{anthropic2025cheapmonitors,
+  author       = {{Anthropic Alignment Science}},
+  title        = {Cheap Monitors},
+  howpublished = {Anthropic alignment blog},
+  year         = {2025},
+  url          = {https://alignment.anthropic.com/2025/cheap-monitors/}
+}
+@article{pandey2026shared,
+  author  = {M. Pandey},
+  title   = {LLMs Know They're Wrong and Agree Anyway: The Shared Sycophancy-Lying Circuit},
+  journal = {arXiv preprint arXiv:2604.19117},
+  year    = {2026},
+  note    = {Single-author preprint},
+  url     = {https://arxiv.org/abs/2604.19117}
+}
+@article{andoni2026robustann,
+  author  = {A. Andoni and T. Haris and E. Kelman and K. Onak},
+  title   = {Efficient Algorithms for Adversarially Robust Approximate Nearest Neighbor Search},
+  journal = {arXiv preprint arXiv:2601.00272},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2601.00272}
+}
+@misc{faisscuvs2025,
+  author       = {{Meta Engineering} and {NVIDIA}},
+  title        = {Accelerating GPU Indexes in FAISS with NVIDIA cuVS},
+  howpublished = {Meta Engineering blog},
+  year         = {2025},
+  url          = {https://engineering.fb.com/2025/05/08/data-infrastructure/accelerating-gpu-indexes-in-faiss-with-nvidia-cuvs/}
+}
+@misc{aisi2026cyber,
+  author       = {{UK AI Security Institute}},
+  title        = {Our Evaluation of Claude Mythos Preview's Cyber Capabilities},
+  howpublished = {AISI},
+  year         = {2026},
+  url          = {https://www.aisi.gov.uk/blog/our-evaluation-of-claude-mythos-previews-cyber-capabilities}
+}
+@misc{aisi2026incident,
+  author       = {{UK AI Security Institute}},
+  title        = {Incident Report: Unsanctioned Agent Behavior during Cyber Testing},
+  howpublished = {AISI},
+  year         = {2026},
+  note         = {Covering 25--28 July 2026},
+  url          = {https://www.aisi.gov.uk/blog/incident-report-unsanctioned-agent-behaviour-during-cyber-testing}
+}
+@misc{clark2026import,
+  author       = {J. Clark},
+  title        = {Import {AI} 471: Why {Hugging Face} Worries Me; Space Mining; {Five Eyes} on {AI}},
+  howpublished = {Import AI},
+  year         = {2026},
+  note         = {August 31, 2026},
+  url          = {https://importai.substack.com/p/import-ai-471-why-hugging-face-worries}
+}
+@misc{cotra2026hf,
+  author       = {A. Cotra},
+  title        = {The {Hugging Face} Attack Surprised Me},
+  howpublished = {Planned Obsolescence},
+  year         = {2026},
+  url          = {https://www.planned-obsolescence.org/p/the-hugging-face-attack-surprised}
+}
+@misc{metr2026policies,
+  author       = {{METR}},
+  title        = {Common Elements of Frontier Safety Policies},
+  howpublished = {METR},
+  year         = {2026},
+  url          = {https://metr.org/common-elements}
+}
+@misc{gsi2025apu,
+  author       = {{GSI Technology}},
+  title        = {Gemini APU: Enabling High-Performance Billion-Scale Similarity Search},
+  howpublished = {GSI Technology},
+  year         = {2025},
+  url          = {https://gsitechnology.com/gemini-apu-enabling-high-performance-billion-scale-similarity-search/}
+}
+@article{templeton2024scaling,
+  author  = {A. Templeton and others},
+  title   = {Scaling Monosemanticity: Extracting Interpretable Features from Claude 3 Sonnet},
+  journal = {Transformer Circuits Thread},
+  year    = {2024},
+  url     = {https://transformer-circuits.pub/2024/scaling-monosemanticity/}
+}
+@article{gao2024sae,
+  author  = {L. Gao and others},
+  title   = {Scaling and Evaluating Sparse Autoencoders},
+  journal = {arXiv preprint arXiv:2406.04093},
+  year    = {2024},
+  url     = {https://arxiv.org/abs/2406.04093}
+}
+@article{lieberum2024gemmascope,
+  author  = {T. Lieberum and others},
+  title   = {Gemma Scope: Open Sparse Autoencoders Everywhere All at Once on Gemma 2},
+  journal = {arXiv preprint arXiv:2408.05147},
+  year    = {2024},
+  url     = {https://arxiv.org/abs/2408.05147}
+}
+% not currently cited; kept for the QAT-precedent argument if it returns
+@article{apple2025foundation,
+  author  = {{Apple}},
+  title   = {Apple Intelligence Foundation Language Models},
+  journal = {arXiv preprint arXiv:2507.13575},
+  year    = {2025},
+  url     = {https://arxiv.org/abs/2507.13575}
+}
+
+% ---------- block 2: added for this paper (verification pending) ----------
+@misc{fefet1c2026,
+  title = {A Dual-Mode 1{FeFET}-1{C} Embedded Memory: Characterization, e{DRAM} Benchmarking, and a Ternary {CAM} Proof of Concept},
+  note  = {Manuscript in preparation},
+  year  = {2026}
+}
+@article{kazemi2022hdcfefet,
+  author  = {A. Kazemi and F. M{\"u}ller and M. M. Sharifi and H. Errahmouni and G. Gerlach and T. K{\"a}mpfe and M. Imani and X. S. Hu and M. Niemier},
+  title   = {Achieving Software-Equivalent Accuracy for Hyperdimensional Computing with Ferroelectric-Based In-Memory Computing},
+  journal = {Scientific Reports},
+  volume  = {12},
+  pages   = {19201},
+  year    = {2022},
+  doi     = {10.1038/s41598-022-23116-w}
+}
+@inproceedings{kazemi2021fefetcam,
+  author    = {A. Kazemi and others},
+  title     = {In-Memory Nearest Neighbor Search with {FeFET} Multi-Bit Content-Addressable Memories},
+  booktitle = {Design, Automation and Test in Europe (DATE)},
+  year      = {2021},
+  url       = {https://arxiv.org/abs/2011.07095}
+}
+@article{ni2019fetcam,
+  author  = {K. Ni and others},
+  title   = {Ferroelectric Ternary Content-Addressable Memory for One-Shot Learning},
+  journal = {Nature Electronics},
+  volume  = {2},
+  pages   = {521--529},
+  year    = {2019}
+}
+@article{li2020acam,
+  author  = {C. Li and others},
+  title   = {Analog Content-Addressable Memories with Memristors},
+  journal = {Nature Communications},
+  volume  = {11},
+  number  = {1},
+  pages   = {1638},
+  year    = {2020}
+}
+@article{pagiamtzis2006cam,
+  author  = {K. Pagiamtzis and A. Sheikholeslami},
+  title   = {Content-Addressable Memory ({CAM}) Circuits and Architectures: A Tutorial and Survey},
+  journal = {IEEE Journal of Solid-State Circuits},
+  volume  = {41},
+  number  = {3},
+  pages   = {712--727},
+  year    = {2006}
+}
+@inproceedings{charikar2002simhash,
+  author    = {M. S. Charikar},
+  title     = {Similarity Estimation Techniques from Rounding Algorithms},
+  booktitle = {ACM Symposium on Theory of Computing (STOC)},
+  pages     = {380--388},
+  year      = {2002}
+}
+@inproceedings{indyk1998lsh,
+  author    = {P. Indyk and R. Motwani},
+  title     = {Approximate Nearest Neighbors: Towards Removing the Curse of Dimensionality},
+  booktitle = {ACM Symposium on Theory of Computing (STOC)},
+  pages     = {604--613},
+  year      = {1998}
+}
+@article{malkov2020hnsw,
+  author  = {Y. A. Malkov and D. A. Yashunin},
+  title   = {Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume  = {42},
+  number  = {4},
+  pages   = {824--836},
+  year    = {2020}
+}
+@inproceedings{ravfogel2020inlp,
+  author    = {S. Ravfogel and Y. Elazar and H. Gonen and M. Twiton and Y. Goldberg},
+  title     = {Null It Out: Guarding Protected Attributes by Iterative Nullspace Projection},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  year      = {2020}
+}
+@inproceedings{esser2020lsq,
+  author    = {S. K. Esser and J. L. McKinstry and D. Bablani and R. Appuswamy and D. S. Modha},
+  title     = {Learned Step Size Quantization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2020}
+}
+@article{zou2023repe,
+  author  = {A. Zou and others},
+  title   = {Representation Engineering: A Top-Down Approach to AI Transparency},
+  journal = {arXiv preprint arXiv:2310.01405},
+  year    = {2023},
+  url     = {https://arxiv.org/abs/2310.01405}
+}
+@article{marks2023geometry,
+  author  = {S. Marks and M. Tegmark},
+  title   = {The Geometry of Truth: Emergent Linear Structure in Large Language Model Representations of True/False Datasets},
+  journal = {arXiv preprint arXiv:2310.06824},
+  year    = {2023},
+  url     = {https://arxiv.org/abs/2310.06824}
+}
+@inproceedings{burns2023ccs,
+  author    = {C. Burns and H. Ye and D. Klein and J. Steinhardt},
+  title     = {Discovering Latent Knowledge in Language Models without Supervision},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2023}
+}
+% not currently cited; needed if the in-distribution FEVER results go in
+@inproceedings{thorne2018fever,
+  author    = {J. Thorne and A. Vlachos and C. Christodoulopoulos and A. Mittal},
+  title     = {{FEVER}: A Large-Scale Dataset for Fact Extraction and Verification},
+  booktitle = {NAACL-HLT},
+  year      = {2018}
+}
+@article{llama3herd,
+  author  = {{Llama Team, AI @ Meta}},
+  title   = {The {Llama} 3 Herd of Models},
+  journal = {arXiv preprint arXiv:2407.21783},
+  year    = {2024},
+  url     = {https://arxiv.org/abs/2407.21783}
+}
+@misc{nvidia_thor,
+  author       = {{NVIDIA}},
+  title        = {Jetson {AGX} {Thor} Developer Kit},
+  howpublished = {NVIDIA product documentation},
+  year         = {2025},
+  note         = {273 GB/s LPDDR5X, 128 GB, 130 W},
+  url          = {https://developer.nvidia.com/embedded/jetson-thor}
+}
+@misc{nvidia_h100,
+  author       = {{NVIDIA}},
+  title        = {{NVIDIA} {H100} Tensor Core {GPU} Datasheet},
+  howpublished = {NVIDIA},
+  year         = {2023},
+  note         = {3.35 TB/s HBM3, 50 MB L2},
+  url          = {https://resources.nvidia.com/en-us-tensor-core}
+}
+
+% ---------- block 3: added for v03 (Aug 25; checked against sources same day,
+% except kim2023alscn author list -- see \dt flag in 02 - Background) ----------
+@inproceedings{oconnor2017fgdram,
+  author    = {M. O'Connor and N. Chatterjee and D. Lee and J. Wilson and
+               A. Agrawal and S. W. Keckler and W. J. Dally},
+  title     = {Fine-Grained {DRAM}: Energy-Efficient {DRAM} for Extreme
+               Bandwidth Systems},
+  booktitle = {IEEE/ACM International Symposium on Microarchitecture (MICRO)},
+  year      = {2017},
+  note      = {HBM2 access energy $\approx$3.97 pJ/bit}
+}
+@inproceedings{liu2022evacam,
+  author    = {L. Liu and M. M. Sharifi and R. Rajaei and A. Kazemi and
+               K. Ni and X. Yin and M. Niemier and X. S. Hu},
+  title     = {Eva-{CAM}: A Circuit/Architecture-Level Evaluation Tool for
+               General Content Addressable Memories},
+  booktitle = {Design, Automation and Test in Europe (DATE)},
+  year      = {2022}
+}
+@inproceedings{dutta2020m3dfefet,
+  author    = {S. Dutta and others},
+  title     = {Monolithic {3D} Integration of High Endurance Multi-Bit
+               Ferroelectric {FET} for Accelerating Compute-In-Memory},
+  booktitle = {IEEE International Electron Devices Meeting (IEDM)},
+  year      = {2020}
+}
+@article{kim2023alscn,
+  author  = {K.-H. Kim and others},
+  title   = {Scalable {CMOS} Back-End-of-Line-Compatible
+             {AlScN}/Two-Dimensional Channel Ferroelectric Field-Effect
+             Transistors},
+  journal = {Nature Nanotechnology},
+  volume  = {18},
+  year    = {2023}
+}
+@misc{schmidt2026interp,
+  author       = {{Schmidt Sciences}},
+  title        = {{AI} Interpretability Program: Detecting Deceptive
+                  Reasoning in {LLMs}},
+  howpublished = {Schmidt Sciences},
+  year         = {2026},
+  url          = {https://www.schmidtsciences.org/ai-interpretability/}
+}
+@article{berger2026liedetector,
+  author  = {T.-F. Berger},
+  title   = {Probing the Limits of the Lie Detector Approach to {LLM}
+             Deception},
+  journal = {arXiv preprint arXiv:2603.10003},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2603.10003}
+}
+
+% ---------- added for v04 (Aug 26) ----------
+% Gray-literature serving-throughput roundup, used only for the tok/s
+% reality check in Sec. III-B; replace with the interconnect-work
+% number if MN has one.
+@misc{lyceum2026tps,
+  author       = {{Lyceum Technology}},
+  title        = {{LLM} Inference Tokens Per Second: 2026 Benchmarks},
+  howpublished = {Online benchmark roundup},
+  year         = {2026},
+  url          = {https://lyceum.technology/magazine/llm-inference-tokens-per-second-comparison-2026/}
+}
+
+% ---------- added Aug 28 (workload anchors) ----------
+@article{vlaperf2026,
+  author  = {W. Jiang and J. Clemons and K. Sankaralingam and C. Kozyrakis},
+  title   = {How Fast Can {I} Run My {VLA}? Demystifying {VLA} Inference
+             Performance with {VLA}-Perf},
+  journal = {arXiv preprint arXiv:2602.18397},
+  year    = {2026},
+  note    = {NVIDIA Research; $\pi_0$ at 19 Hz on Jetson Thor, 50-action
+             chunks},
+  url     = {https://arxiv.org/abs/2602.18397}
+}
+
+@article{deepseekv3,
+  author  = {{DeepSeek-AI}},
+  title   = {{DeepSeek-V3} Technical Report},
+  journal = {arXiv preprint arXiv:2412.19437},
+  year    = {2024},
+  note    = {671B-parameter MoE; $d=7{,}168$, 61 layers},
+  url     = {https://arxiv.org/abs/2412.19437}
+}
