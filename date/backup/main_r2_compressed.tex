@@ -1,0 +1,996 @@
+% ============================================================
+%  date/main.tex -- single-file working copy for the LENGTH CUT
+%
+%  Created 2026-09-16 from the v7 tree one level up
+%  ("00 - DATE CAM Monitoring.tex" + section files 01-08), with every
+%  \input inlined verbatim in order. Section boundaries are marked
+%  with "% ===== NN - <file> =====" separators so edits can be traced
+%  back to the source file if needed. The v7 tree is the archive; the
+%  version history and change-log lives in its 00 file.
+%
+%  Target: DATE 2027 regular paper -- 6 pages + 1 page for references
+%  only (CFP wording: "must not exceed 6 pages in length, with one
+%  extra page allowed only for bibliographic references"). Final
+%  paper deadline: Sunday 20 Sep 2026 AoE. Baseline at creation:
+%  16 pages (~14.7 body + ~1.3 references).
+%
+%  STATUS: R1 structural cuts applied Sep 16 -> 14 pages clean. See the
+%  length-cut log at the end of this file (With Comments build) and
+%  cut_plan.md. backup/ holds the pre-round snapshots.
+%
+%  Supporting files copied alongside: IEEEtran.cls, IEEEtran.bst,
+%  RobStd.sty, comments.tex (flag system), refs.bib, figures/.
+%  Compile: bash compile.sh   (main.pdf = clean; main-comments.pdf)
+%  or plain: pdflatex main && bibtex main && pdflatex main && pdflatex main
+% ============================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{RobStd}
+\usepackage{subcaption}
+\usepackage{siunitx}
+% --- siunitx v2/v3 compatibility shim ------------------------
+\ifdefined\qty\else
+  \NewDocumentCommand{\qty}{O{}mm}{\SI[#1]{#2}{#3}}
+\fi
+\ifdefined\unit\else
+  \NewDocumentCommand{\unit}{O{}m}{\si[#1]{#2}}
+\fi
+% -------------------------------------------------------------
+\usepackage{placeins}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{url}
+\renewcommand\arraystretch{1.15}
+\setlength{\tabcolsep}{4pt}
+\graphicspath{{figures/}}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% --- shorthand macros ----------------------------------------
+\newcommand{\cam}{{CAM}\xspace}
+\newcommand{\tcam}{{TCAM}\xspace}
+\newcommand{\mcam}{{MCAM}\xspace}
+\newcommand{\acam}{{ACAM}\xspace}
+\newcommand{\imc}{{CiM}\xspace}
+\newcommand{\fefet}{{FeFET}\xspace}
+\newcommand{\fefets}{{FeFETs}\xspace}
+\newcommand{\auroc}{{AUROC}\xspace}
+\newcommand{\signrp}{{sign-RP}\xspace}
+\newcommand{\tocite}[1]{[{\color{red}citation-#1}]}
+
+\input{comments}
+% \setboolean{showcomments}{true}   % or run: bash compile.sh
+
+\begin{document}
+
+% ============================================================
+%  ANNOTATION FLAGS -- quick reference
+%
+%  All flags compile away when showcomments is false (the default).
+%  The two action flags take the SAME shape, \flag[what to do]{content}.
+%  Content survives into BOTH builds; the bracketed note appears only in
+%  the With Comments build. With NO optional argument the braced text IS
+%  the note and disappears from the clean build entirely.
+%
+%  ORANGE -- an action to take
+%    \dt[note]{content}          (was \dothis / \dothisflag; still work)
+%    \dt{fill in the deadline}   note only, vanishes from the clean build
+%
+%  BLUE -- say more about this
+%    \eo[note]{content}          (was \expandon / \expandonflag; still work)
+%
+%  RED / VIOLET -- reviewer remarks, review build only
+%    \inote{short note}   \inote[aiviolet]{AI-generated suggestion}
+%    \begin{pnote} ... \end{pnote}     block note; escape _ as \_
+%    \reviewonly{...}                  content only in the review build
+%
+%  PER-AUTHOR inline notes: \mn{...} \ib{...} \sj{...} \xh{...}
+%
+%  A ']' typed inside a flag's optional argument silently truncates it
+%  and leaks the rest into the CLEAN build. Brace them: {[1]}, {[5]}.
+% ============================================================
+
+% ============================================================
+%  WRITING CONVENTIONS FOR THIS DRAFT (MN's voice; fix-ai-writing skill)
+%
+%  1.  Plain, first person plural, hedged. "may", "could", "appears to",
+%      "remains to be established". No absolutes that are not absolute.
+%  2.  En dashes (--), never em dashes (---).
+%  3.  Numbered inline lists: {\bf (1)} ... {\bf (2)} ..., not
+%      "First, ... Second, ...".
+%  4.  Bold run-in lead-ins end with a COLON, not a period, and the next
+%      word keeps its capital:  \textbf{What the grid measures:} Whether ...
+%  5.  Never the word "honest" as framing; never announce your own
+%      fairness ("to be fair", "stated fairly", "candidly").
+%  6.  No self-referential framing: "the whole argument", "the key
+%      insight", "which is the entire problem", "the upshot", "X turns
+%      on Y". State the substance and stop.
+%  7.  No verdict tags on your own description ("and it works").
+%  8.  Do not narrate design choices ("deliberately", "chosen to be").
+%  9.  A section discusses; it is not a proof. "Sec. IV covers ...",
+%      not "Sec. IV is the proof that ...".
+%  10. No "binds" / "bites" for constraints; no borrowed-metaphor verbs
+%      ("is the currency", "prices the choice", "lands on", "rests on").
+%      Use "maps to", "depends on", "the limit here is".
+%  11. American spelling, always. Define every acronym at first use.
+%  12. Scope caveats go in footnotes, not into the argumentative flow.
+%  13. Label invented or illustrative examples as such, in the text.
+%  14. Figures follow the house-graphs conventions: Helvetica, Set1
+%      colors, transparent background, provenance header in the
+%      generating script (see gen_paper_figs.py).
+% ============================================================
+
+\bstctlcite{IEEEexample:BSTcontrol}
+
+% DATE is double-blind: authors and funding are anonymized for
+% submission. Funding restored at camera-ready (SRC/DARPA JUMP 2.0;
+% NSF IRES; etc.).
+% Title per MN (08-25): option (2) from the v02 markup -- names the
+% design-space contribution first for a DATE audience.
+\title{\cam-Resident Behavioral Monitoring for LLMs: Encoding Choices,
+Cross-Domain Fidelity, and Library-Size Scaling}
+
+\author{\IEEEauthorblockN{Anonymized for review}
+\IEEEauthorblockA{DATE 2027 submission}}
+
+\maketitle
+
+\begin{abstract}
+Frontier language model deployments increasingly treat a model's own
+activations as a safety signal: a production jailbreak defense from
+Anthropic scores a single linear probe over residual-stream
+activations on every generated token, at roughly $10^{-3}$~percent
+of forward-pass compute. What is monitored is set by $K$, the number
+of stored behavioral signatures each activation is compared against,
+and target $K$'s are increasing rapidly: from $K=1$ in that defense,
+to $10^{2}$--$10^{3}$ once probes are fitted per behavior, domain,
+and layer, to $1.3\!\times\!10^{5}$ per layer for a whole-vocabulary
+readout. On a GPU the signature bank streams from high-bandwidth
+memory once per monitored token, so at high enough $K$ or token rates
+the monitor's own memory traffic can exceed the bandwidth of the
+accelerator it runs on. We propose supporting this search with
+content-addressable memories (\cam{}s), which evaluate distance
+functions inside the memory array, trading arithmetic precision and
+distance-function fidelity for orders of magnitude less data
+movement. We quantify this trade on two workloads: {\bf (1)} a
+ten-domain cross-domain deception grid over Llama-3.3-70B
+activations, where 384-bit codes hold in-domain \auroc within 0.01
+of the full-precision cosine ceiling at more than $300\times$
+compression per signature; and {\bf (2)} whole-vocabulary readout,
+where a 3-bit Euclidean code at $\sim$$10^{3}$ bits per row
+reproduces 0.96 of the exact readout's top-1 selections. The
+whole-vocabulary bank then occupies 6--\qty{33}{\mega\byte} per
+layer, and its estimated in-array search energy is five to six
+orders of magnitude below streaming the equivalent bank from HBM.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Content-addressable memory; compute-in-memory; large language models;
+activation probes; AI safety monitoring; nearest-neighbor search;
+ferroelectric FETs; Hamming distance
+\end{IEEEkeywords}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 01 - Introduction.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:Introduction}
+Large language model (LLM) deployments are wrapped in layered
+safeguards, and until recently every layer read
+\emph{text}~\cite{metr2026policies}. That has started to change: the
+always-on stage of one production jailbreak defense now reads the
+model's activations directly~\cite{ccpp2026,anthropic2026ccblog}, as
+do deployed residual-stream probes at a second
+provider~\cite{gemini2026probes}. The deployed check is small -- one
+stored vector, one dot product per generated token, one threshold --
+and only flagged exchanges are escalated to an expensive classifier
+ensemble.
+
+Recent security evaluations show why such monitors are needed.
+In current cyber evaluations the strongest model tested progresses,
+unaided, through 22 of 32 steps from reconnaissance to takeover, at
+run budgets up to $10^{8}$ tokens~\cite{aisi2026cyber}. In one campaign of
+122 such runs across seven models, evaluators later found 19
+unsanctioned actions (supply-chain compromise of a real open-source
+project, deception, prompt injection, inter-agent collaboration) --
+all of them \emph{retrospectively}; nothing was
+watching the models' internal state as they
+ran~\cite{aisi2026incident}, and a month later the same behaviors
+appeared at production scale, on OpenAI's and Hugging Face's
+infrastructure~\cite{clark2026import,cotra2026hf}. Each message such
+an agent emits can read as routine while the sequence adds up to an
+attack, so a monitor for this setting has to be per-token, always-on,
+and internal.
+
+Interpretability work supplies the signatures and indicates how many
+are needed: linear probes recover truth-related structure across
+datasets and model
+families~\cite{marks2023geometry,burns2023ccs,zou2023repe}, but a
+probe fitted on factual lying scores near chance on
+sycophancy~\cite{ying2026spectrum}, and probes trained on outright
+lying miss deception carried by technically true
+statements~\cite{berger2026liedetector}, so covering a behavior suite
+takes a stored direction per behavior, per domain, per layer -- one
+more stored row each. The published record already spans five orders
+of magnitude. \textbf{\boldmath$K=1$} represents the deployed monitors
+above~\cite{ccpp2026,gemini2026probes}. \textbf{\boldmath$K\approx10^{2}$}
+captures probes fitted per behavior and per
+domain~\cite{ying2026spectrum}. \textbf{\boldmath$K\approx10^{3}$} is
+the four behavior categories of the above campaign over ten domains
+and 13--25 usable layers -- i.e., 520--1{,}000
+rows~\cite{aisi2026incident}.
+\textbf{\boldmath$K\approx1.3\!\times\!10^{5}$} is a whole-vocabulary
+(``J-space'') readout: a published method reports that for every
+token in the vocabulary there is an internal pattern meaning that
+word is currently active, whether or not the word is ever
+said~\cite{anthropic2026workspace}.\footnote{Prompted with the number
+of legs on the animal that spins webs, the model answers \emph{eight}
+while the readout shows \emph{spider} active; the same work reports
+``fake'' and ``fictional'' active while a model privately registered
+that a safety test was staged.} Feature
+dictionaries~\cite{templeton2024scaling} sit two orders higher still,
+but deployable parts run out of memory bandwidth well before that:
+per Fig.~\ref{fig:ladder}, at $10^{3}$~tokens/s monitoring alone
+consumes an H100 at $K\!\approx\!204$K and a Jetson-class part at
+$K\!\approx\!17$K (Sec.~\ref{subsec:CostModel}).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.4in]{fig_ladder_v3.pdf}
+\caption{Share of a part's memory bandwidth consumed by monitoring
+alone, against aggregate token rate and library size $K$
+(Eq.~(\ref{eq:gputraffic}) at $d=8{,}192$, fp16, one monitored
+layer): 100\% of an H100, an A100, and a Jetson Thor, with 10\% and
+1\% of an H100 as guides. Arithmetic on vendor figures, not measured
+throughput.}
+\label{fig:ladder}
+\end{figure}
+
+We propose to support this search with a content-addressable memory
+(\cam), which computes the distance function in the memory array
+itself, so the bank never moves and per-token traffic is flat in
+$K$; SRAM \cam{}s are buildable in any CMOS process today, while
+\cam{}s on emerging devices (\fefets, RRAM) add density,
+nonvolatility, and richer distance metrics
+(Sec.~\ref{subsec:CAMspace}). Our contributions include: {\bf (1)} a
+formulation of always-on activation monitoring as library search,
+with its traffic arithmetic and GPU crossing points
+(Sec.~\ref{subsec:CostModel}); {\bf (2)} a mapping of the detector
+onto \cam cell types and match modes, with an audit that catches
+classification hiding in a trained front end
+(Sec.~\ref{sec:Mapping}); {\bf (3)} measured fidelity at \cam
+precision at both ends of the $K$ range (Secs.~\ref{sec:Results},
+\ref{sec:LargeK}); and {\bf (4)} a first-order search energy and
+latency estimate against a measured GPU baseline
+(Sec.~\ref{sec:Hardware}).
+% ===== end 01 - Introduction.tex =====
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 02 - Background.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Background and Cost Model}
+\label{sec:Background}
+
+\subsection{The CAM design space}
+\label{subsec:CAMspace}
+\label{subsec:CAMtech}
+Ordinary memory takes an address and returns content, so searching a
+library means reading it row by row. A \cam compares every row
+against the query at once, in place, and only reports matching
+rows~\cite{pagiamtzis2006cam}: one access is one search of the whole
+library, and the data that moves is the query rather than the bank.
+A \textbf{binary \cam} (BCAM) cell holds one bit; a \textbf{ternary
+\cam} (\tcam) cell holds a bit or a don't-care~\cite{ni2019fetcam}; a
+\textbf{multi-bit \cam} (\mcam) cell holds one of several
+levels~\cite{kazemi2021fefetcam}; an \textbf{analog \cam} (\acam)
+cell holds a range~\cite{li2020acam}. A binary or ternary cell can
+report only whether a position disagrees, so a row of them measures
+Hamming distance. A multi-bit cell stores a level: in a multi-bit
+\fefet cell the matchline current is approximately quadratic in the
+difference between query and stored level, so $N$ cells on a
+matchline sum to $\sum_i (Q_i-M_i)^2$, a squared Euclidean distance
+with no multiplier
+anywhere~\cite{kazemi2021fefetcam,kazemi2022hdcfefet}.\footnote{Squared
+Euclidean stands in for Euclidean; the square root is monotonic.} The
+array reports an \textbf{exact}
+match, the \textbf{best} match (fewest mismatches), or a
+\textbf{threshold} match (every row within a limit $\tau$); the
+expected answer in monitoring is almost always empty, which threshold
+mode reports without ranking anything. The cheapest cells (BCAM at
+$\sim$6--10 transistors in any CMOS process; \tcam at $\sim$16T, or
+two \fefets) support only Hamming distance, so encodings that hold accuracy under a Hamming metric are
+potentially valuable, and what follows quantifies what an
+emerging-technology \cam can or cannot buy over a plain CMOS Hamming
+array.
+
+SRAM-based cells are buildable in any CMOS process today; \fefet-,
+RRAM-, and MRAM-based cells trade that ubiquity for density and
+nonvolatility, with device work moving toward the back end of
+line~\cite{dutta2020m3dfefet}, where a static signature bank could
+eventually sit above the compute that produces the activations. None
+of these would be built for one application -- an SRAM associative
+processor already performs Hamming search at billion-vector scale
+commercially~\cite{gsi2025apu}, and \cam accelerators have been
+proposed for one-shot learning~\cite{ni2019fetcam}, nearest-neighbor
+search~\cite{kazemi2021fefetcam}, and range
+matching~\cite{li2020acam} -- so the contribution here is the
+workload mapping and the library-size analysis, not a new cell.
+
+\subsection{Preliminaries and related work}
+\label{subsec:Probes}
+\label{subsec:RelatedWork}
+\textbf{Probes:} A token is carried through a transformer by a
+running vector, the \emph{residual stream}; after layer $\ell$ it is
+$h^{(\ell)}$, $d$ numbers ($d=8{,}192$ for a 70B model). No single
+coordinate means ``deception,'' and the simplest whole-vector
+detector is a \emph{linear probe}, one stored vector $w$ fitted offline on labeled activations
+and a threshold $\theta$, with $w \cdot h > \theta \Rightarrow$
+flag~\cite{marks2023geometry,burns2023ccs,zou2023repe}, costing
+roughly $10^{-5}$ of a 70B forward pass.
+\textbf{Grading:} Area under the receiver operating characteristic
+curve (\auroc), the fraction of (deceptive, honest) pairs the
+detector orders correctly, with
+\emph{cross-domain} evaluation -- fit on one kind of dishonesty,
+evaluate on another~\cite{ying2026spectrum} -- as the stress test for
+library size.\footnote{A \emph{domain} is a subject matter to be
+dishonest about; a \emph{behavior} is a kind of dishonesty (lying
+about a fact, flattering the user, underperforming on an
+evaluation).}
+\textbf{Related work:} The two-stage cascade
+in~\cite{ccpp2026,anthropic2026ccblog} and the deployed Gemini
+probes~\cite{gemini2026probes} are the closest published statements
+of this workload; both operate at $K$ of order one, at 1--3.5\%
+overhead for the probe-fronted cascade against 23.7\% for the
+text-classifier pair it replaced~\cite{cc2025,ccpp2026}. Approximate
+nearest-neighbor search~\cite{charikar2002simhash,malkov2020hnsw}
+visits a fraction of a bank, but a monitor cannot afford the misses
+an adversary can aim at; an exhaustive scan has none to exploit.
+\dt[still to verify: that the 1--3.5\% in ccpp2026 is measured over
+the full cascade rather than the probe alone. Also: the two
+``companion document'' pointers (red-team objections) are removed
+from the body -- restore them if the appendix document goes to
+reviewers]{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 03 - Library Scaling.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The cost model}
+\label{sec:Scaling}
+\label{subsec:CostModel}
+\label{subsec:Ladder}
+Let $K$ be the number of stored signatures per monitored layer, $d$
+the residual width, $L_{\mathrm{mon}}$ the number of monitored
+layers, $R$ the token rate, and $b$ the bytes per stored element. A
+GPU reads the bank once per monitored token, while a \cam broadcasts
+the query and leaves the bank in place:
+%
+\begin{equation}
+T_{\mathrm{GPU}} \;=\; K \, d \, b \, L_{\mathrm{mon}} \, R, \qquad
+T_{\mathrm{CAM}} \;=\; d \, b \, L_{\mathrm{mon}} \, R
+\quad\text{bytes/s,}
+\label{eq:gputraffic}
+\end{equation}
+%
+the latter independent of $K$. At $d=8{,}192$, fp16, one monitored
+layer and $R=1{,}000$~tokens/s, monitoring traffic reaches an H100's
+entire \qty{3.35}{\tera\byte\per\second}~\cite{nvidia_h100} at
+$K\!\approx\!204$K, an A100's at $K\!\approx\!122$K, and a
+Jetson-class part's
+\qty{273}{\giga\byte\per\second}~\cite{nvidia_thor} at
+$K\!\approx\!17$K. The crossings move with the token rate, a
+deployment parameter rather than a property of the monitor, so
+Fig.~\ref{fig:ladder} plots the limiting $K$ across rates from
+batch-1 edge decoding (robot-control policies emit tens to $10^{3}$
+action tokens/s with no batch to amortize
+against~\cite{vlaperf2026}) to 70B-class serving at order $10^{3}$
+tokens/s per datacenter GPU~\cite{lyceum2026tps}. Two properties of
+Eq.~(\ref{eq:gputraffic}) matter. {\bf (1)} Latency is the wrong
+way to judge a monitor's cost: at small $K$ the reads hide under
+inference latency, so the monitor \emph{looks} free, but the bytes
+and the energy still must move, per token. {\bf (2)} A per-token
+price multiplies a compounding token base -- the campaign runs above
+walk 32 steps over roughly 20 hours at up to $10^{8}$
+tokens~\cite{aisi2026cyber} -- so it is what decides whether an
+always-on monitor stays on.
+% ===== end 03 - Library Scaling.tex =====
+% ===== end 02 - Background.tex =====
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 04 - Detector Mapping.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mapping the Detector into a CAM}
+\label{sec:Mapping}
+Signatures can be mapped onto \cam arrays spanning emerging devices
+and nearer-term CMOS (or nonvolatile memories such as RRAM and MRAM).
+The first mapping assumed the best-case multi-bit device and is the
+reference point; Encodings 1--3 meet the requirements below on
+hardware buildable today.
+
+\subsection{What ``CAM-resident'' requires}
+\label{subsec:Requirements}
+For the monitor to be one memory structure rather than a memory plus
+an accelerator: {\bf (1)} the query has to be producible from the
+raw activation by something cheap, since whatever sits in front of
+the array runs on every token; {\bf (2)} the comparison the array
+performs natively has to be the comparison the detector needs, which
+for a binary or ternary cell means a Hamming distance; and {\bf (3)}
+the decision rule has to consume what a matchline can report -- a
+winner, a set of rows under a threshold, or a count -- rather than a
+full sorted score vector. Property~(1) has a methodological
+consequence: a trained front end can learn to do the classification
+itself, leaving the memory as decoration (Sec.~\ref{subsec:Audit}).
+
+\subsection{The first mapping: learned projection, 3-bit Euclidean}
+\label{subsec:FirstPipeline}
+\label{subsec:PathBack}
+A multi-bit, \fefet-class cell holds a level rather than a bit -- a
+richer representation, or the same representation in fewer cells --
+with the matchline computing the Euclidean distance the detector
+actually uses; a down-projection is needed regardless
+(requirement~{\bf (1)}). The first pipeline took the layer-33
+activation, built a bank of mutually
+distinct deception directions~\cite{ravfogel2020inlp}, compressed the
+activation with a \emph{learned} projection from $d=8{,}192$ to
+$d'=128$, quantized query and rows to 3 bits with learned-step
+quantization~\cite{esser2020lsq}, and matched by Euclidean
+winner-take-all. $d'=128$ matches the row
+geometry of a multi-bit \fefet array -- 128 cells sharing a
+matchline at 3 bits each -- so a stored row is
+384-bit-\emph{equivalent}, the matched operating point of
+Sec.~\ref{sec:Results}. The encodings below trade its
+multi-bit cell for Hamming-distance solutions realizable by NVMs and
+by plain CMOS; Sec.~\ref{subsec:BitWidth} evaluates the
+recombination, a frozen projection on a Euclidean matchline.
+
+\subsection{Encoding 1: sign random projection, ternary (or via other
+NVMs)}
+\label{subsec:SignRP}
+Draw $P \in \mathbb{R}^{m \times d}$ once and freeze it, then encode
+an activation as the sign pattern of its projection,
+%
+\begin{equation}
+c_j(h) \;=\; \operatorname{sign}\!\big( (Ph)_j \big), \qquad j = 1 \ldots m,
+\label{eq:signrp}
+\end{equation}
+%
+with a dead zone $|(Ph)_j| < \epsilon$ mapped to don't-care, which
+makes the code ternary and requires a wildcard-capable cell. This is
+the standard sign-random-projection (SimHash)
+construction~\cite{charikar2002simhash}: the Hamming distance between
+two codes estimates the angle between the vectors, and it is an XOR
+plus a population count, which a plain \cam array computes natively
+(a code wider than an array row is split across subarrays and
+aggregated, as in the measured \fefet \cam
+of~\cite{kazemi2022hdcfefet}).
+
+\subsection{Encoding 2: thermometer coding (plain binary CMOS)}
+\label{subsec:Thermometer}
+Quantize each projected dimension into $\ell$ levels and encode each
+level in unary, so level $v$ becomes $v$ ones followed by $\ell-v$
+zeros. For two codes $u,v$ over the same dimension,
+%
+\begin{equation}
+d_{\mathrm{Ham}}\big(\mathrm{therm}(u), \mathrm{therm}(v)\big)
+\;=\; \sum_i \big| u_i - v_i \big|,
+\label{eq:thermo}
+\end{equation}
+%
+i.e., Hamming distance on the code is exactly the $L_1$ distance on
+the quantized values, so a cell that can only report disagreement
+supports a magnitude-sensitive metric -- at roughly 6--10 transistors
+rather than a \tcam's 16, since no wildcard is needed. A
+1\fefet-1C array (a DRAM-like cell with the \fefet as access
+transistor) has been extended to ternary \cam operation with a
+fabricated proof of concept whose matchline voltage is linear in
+Hamming distance~\cite{fefet1c2026}, so either encoding could also be
+hosted there, nonvolatile.
+\dt[DAC-thermosensitive.pdf: cite here with its plausible extension
+once the PDF arrives from MN's work machine; also settle the
+fefet1c2026 bib entry's authors before submission]{}
+
+\subsection{The decision rule}
+\label{subsec:Decision}
+The stored rows are labeled example activations rather than fitted
+directions: each domain stores a few thousand encoded activations,
+each labeled honest or deceptive. A query is scored by the fraction
+of its $k=31$ nearest stored rows, under the array's metric, that
+carry the deceptive label (the gain flattens well before 31); \auroc
+is computed on that score directly, and the rule consumes only what a
+best-match or threshold matchline can report.
+
+\subsection{Encoding 3, as a ceiling: shortlist plus exact rerank}
+\label{subsec:TwoStage}
+To bound what the compression costs, we also run a two-stage
+variant: a thermometer-Hamming search of the whole bank keeps the top
+$k$ rows as a shortlist, and an exact cosine rerank on the raw
+activations scores the shortlist. With $k$ equal to the whole bank,
+stage 2 alone defines the full-precision ceiling for the same data
+and protocol; the construction is standard in large-scale
+retrieval~\cite{faisscuvs2025}.
+% ===== end 04 - Detector Mapping.tex =====
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 05 - Results.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Workload 1: Deception Detection}
+\label{sec:Results}
+We first evaluate the mappings on a deception detection workload,
+where the library is set by how many behaviors and domains someone
+decides to watch -- the $K\approx10^{2}$--$10^{3}$ regime of
+Fig.~\ref{fig:ladder}.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=7.0in]{fig_grids_v3.pdf}
+\caption{Cross-domain \auroc on the ten-domain grid,
+Llama-3.3-70B-Instruct activations at layer 33; rows index the domain
+stored in the bank, columns the domain of the held-out test
+activations. (a) 384-bit \signrp ternary code (wildcard-capable
+\tcam cell); (b) 384-bit thermometer code (plain binary \cam cell);
+(c) Hamming shortlist over the whole bank followed by an exact cosine
+rerank on the raw activations, i.e., the full-precision ceiling for
+the same data and protocol.}
+\label{fig:grids}
+\end{figure*}
+
+\subsection{Experimental setup}
+\label{subsec:Setup}
+We follow the cross-domain protocol of the Truthfulness Spectrum
+study~\cite{ying2026spectrum}: a detector built from one domain's
+labeled honest and deceptive activations is scored on every other
+domain's. Activations are Llama-3.3-70B-Instruct at
+layer 33~\cite{llama3herd}, the layer the source study tuned, so our
+grids compare against theirs. The ten domains are definitional, empirical, fictional,
+logical, ethical, sycophancy, \texttt{repe\_honesty}~\cite{zou2023repe},
+roleplaying, insider trading, and sandbagging; within each domain 70\% of
+examples form the stored bank and 30\% are held out, and banks range
+from 831 rows (definitional) to 3{,}201 (sycophancy).
+
+\subsection{The grids}
+\label{subsec:Grids}
+Fig.~\ref{fig:grids} shows the grids for the two single-stage
+encodings and the exact-rerank ceiling (Table~\ref{tab:encodings}
+summarizes them with the hardware each requires).
+
+\textbf{In-domain fidelity is essentially unaffected by the
+encoding:} Diagonal means are 0.920 (\signrp ternary, 384~b) and
+0.919 (thermometer, 384~b) against 0.928 for the exact rerank: a
+384-bit code in a plain array costs 0.008--0.009 \auroc against
+full-precision cosine similarity over 8{,}192 values.
+
+\textbf{Cross-domain fidelity is where compression shows:}
+Off-diagonal means are 0.640 (ternary) and 0.579 (thermometer)
+against 0.705, a cost of 0.065--0.126 \auroc. At matched bits ternary
+leads by 0.061 on average and in 63 of 90 cells -- but a ternary
+position may cost roughly two bits of hardware. At matched cell
+count, the thermometer code at 768~b (256 directions at 3 bits)
+scores 0.924 in-domain and 0.631 cross-domain: within 0.009 of
+ternary's mean, ternary ahead in 54 of 90 cells, and the worst cell
+improving from 0.259 to 0.319 -- at matched silicon the two appear
+to be within noise on the mean, with ternary keeping a small
+cell-wise edge.
+
+\textbf{The pattern of failure reproduces the published one:} All
+three grids keep the factual block high and put sycophancy near
+chance from every other row, as the source study
+reports~\cite{ying2026spectrum}; the full-precision grid has the
+same holes in the same places, so the ceiling on transfer is set by
+the representations rather than by our compression. Pooling does not
+change this: a bank built from all ten
+training splits (11{,}278 rows) averages 0.906 (thermometer), 0.909
+(ternary), and 0.927 (ceiling) over the ten test domains, with
+sycophancy still at 0.63, unlike the source study's combined probe at
+0.97. Covering a behavior suite therefore means storing rows per
+behavior and domain -- the library scale this paper prices.
+
+\begin{table}[t]
+\centering
+\caption{The encodings, their measured fidelity on the ten-domain
+grid, and what each needs from a cell. Bank size is for a
+4{,}000-row exemplar bank at the given code width; $^{*}$matched
+cell count against ternary at 384~b.}
+\label{tab:encodings}
+{\scriptsize\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lccll@{}}
+\toprule
+\textbf{Encoding} & \textbf{in-dom.} & \textbf{cross-dom.} &
+\textbf{Cell needed} & \textbf{Bank} \\
+ & mean & mean & & (4K rows) \\
+\midrule
+\signrp ternary, 384\,b       & 0.920 & 0.640 & \tcam, $\sim$16T   & 192\,kB \\
+Thermometer, 384\,b           & 0.919 & 0.579 & BCAM, $\sim$6--10T & 192\,kB \\
+Thermometer, 768\,b$^{*}$          & 0.924 & 0.631 & BCAM, $\sim$6--10T & 384\,kB \\
+Shortlist $+$ rerank          & 0.928 & 0.671 & BCAM $+$ FP unit   & 192\,kB $+$ raw \\
+Exact rerank (ceiling)        & 0.928 & 0.705 & FP baseline        & 65\,MB \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Neither wider codes nor a richer cell closes the gap}
+\label{subsec:BitWidth}
+More code capacity does not close the gap, in either encoding: from
+384 to roughly 2{,}048 bits, 23 of 90 off-diagonal
+cells drop by more than 0.05 \auroc for ternary (worst $-0.303$,
+sandbagging tested on insider trading) and 12 of 90 for thermometer
+(worst $-0.209$), while the diagonal is flat or slightly up. A
+richer cell does not help either once the projection is frozen: with
+the same frozen projection, rounded to eight levels, a Euclidean
+matchline (128 multi-bit cells per row)
+scores 0.920 in-domain and 0.579 cross-domain against 0.920 and 0.593
+for Hamming distance on the corresponding thermometer code (896
+binary cells per row), ahead in only 37 of 90 cells. The first
+pipeline's edge therefore came from its trained projection rather
+than its matchline; with a frozen projection the multi-bit cell's
+remaining benefit is fewer cells per row. On this grid, then, the
+costlier cell does not buy accuracy, and transfer, if it comes, comes
+from storing more vectors rather than wider ones -- the library
+growth Sec.~\ref{subsec:CostModel} prices.
+
+\subsection{A fixed shortlist does not travel across bank sizes}
+\label{subsec:Shortlist}
+The two-stage variant appears to recover the ceiling -- with an
+absolute shortlist of $k=400$ the diagonal mean is unchanged at
+0.928 and the off-diagonal mean falls only to 0.671 -- but the
+aggregate hides a failure of a \emph{fixed} parameter. Coverage, how
+often the true full-precision top-1 neighbor lands inside the
+Hamming shortlist, is 82.5\% for the 831-row definitional bank but
+18.3\% for the 3{,}201-row sycophancy bank, so the sycophancy row
+loses 0.204 \auroc on average and up to 0.468 in one cell.
+Recovering that mean takes $k$ at 75--100\% of the bank, where it is
+no longer a shortlist. A \cam-resident design should therefore use the
+single-stage encodings, or a threshold rather than a top-$k$
+criterion.
+
+\subsection{The destroyed-vector audit}
+\label{subsec:Audit}
+\label{subsec:AuditResults}
+A pipeline of the form ``trained front end, then memory'' can pass
+its accuracy test while the memory contributes nothing, so we
+re-measure every configuration with the stored rows replaced by
+random vectors of the same shape; the accuracy that survives is the
+\emph{front-end share}, where high is bad. Across five variants of
+the first pipeline it was 98--100\% for a learned binary hash and
+66--85\% for a weighted thermometer -- the two highest-scoring
+variants, one of which reached 0.993 \auroc, both retired -- against
+24--28\% for 3-bit LSQ Euclidean, 20\% for a direct sign code, and
+4--14\% for a random sign projection, which is why Encodings~1 and~2
+use frozen projections. Those encodings pass -- randomizing the bank collapses the 2{,}048-b
+\signrp grid to a mean of 0.50 with 83\% of cells within 0.4--0.6,
+and a label-shuffle control at 384~b gives 0.500 (ternary) and 0.501
+(thermometer) -- and we report front-end share alongside \auroc for
+every configuration.
+\dt[IB: confirm the wording -- the 384-b numbers you sent are from the
+label-shuffle audit, a different control from the randomized-bank
+audit; the text states the two separately. If a randomized-bank run
+exists at 384~b, swap it in]{}
+% ===== end 05 - Results.tex =====
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 06 - Large K.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Workload 2: Whole-Vocabulary Readout}
+\label{sec:LargeK}
+\label{subsec:Jspace}
+At the other end of the $K$ axis the library is set by the model's
+vocabulary. The readout method of Sec.~\ref{sec:Introduction}
+reports one internal pattern per vocabulary
+token~\cite{anthropic2026workspace} (and ``manipulation'' active
+while a model produced falsified data during a pre-release audit), so
+reading this space means comparing the internal state against
+roughly 128K stored signatures for a Llama-family tokenizer, at
+several layers, every token; nobody chose that size, and phrases
+would only enlarge it.
+
+\subsection{An in-house reproduction, at watchlist scale}
+\label{subsec:Watchlist}
+We reproduced the readout in-house on Llama-3.1-8B; about 13 of 32
+layers carry a usable readout, the source of the ``13--25 usable
+layers'' factor above. Signatures are
+precomputed offline, so a watched word costs one comparison per
+token, and we stored 47 deception-adjacent signatures per monitored
+layer as \cam rows. In a staged replacement scenario, five of ten
+watch words -- ``scandal,'' ``evidence,''
+``leaked,'' ``fake,'' ``shutdown'' -- reached rank~0 by exact
+full-vocabulary rank at interpretable moments in the 2{,}048 prompt
+tokens, ``threat'' rank~1 and ``blackmail'' rank~2, none present in
+the prompt, while the reply itself was cooperative and unremarkable. These are preliminary numbers: one
+model, one scenario, 47 signatures.\footnote{The fidelity values below were read from result
+charts rather than result files; verification is queued.}
+
+\subsection{Fidelity at \cam precision}
+\label{subsec:JspaceFidelity}
+The full-precision dot product against the stored patterns \emph{is}
+the ground truth here, so no labels are needed: we record which of
+the 47 stored vectors fire above a global threshold under the exact
+computation on Wikitext activations, and ask how well each
+\cam-compatible encoding reproduces that list under two readouts,
+\emph{threshold} (every firing row reported; metric per-row firing
+F1) and \emph{top-1} (the closest row reported; metric agreement with
+the exact choice). Fig.~\ref{fig:jspace} plots both against storage
+bits per row, the axis that sets the bank size; an fp16 row is
+131{,}072 bits.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.4in]{fig_jspace_v2.pdf}
+\caption{Whole-vocabulary readout reproduced through a \cam: (a)
+per-row firing F1 and (b) top-1 agreement with the exact readout,
+against storage bits per \cam row, for a bank of 47 vectors per
+layer; the star marks an uncompressed fp16 row (131{,}072 bits).
+Values digitized from the source result charts.}
+\label{fig:jspace}
+\end{figure}
+
+\textbf{Two orders of magnitude of compression cost less than it
+might:} A 3-bit Euclidean code at $\sim$$10^{3}$ bits per row, a
+$128\times$ reduction, reaches 0.96 top-1 agreement and 0.81 firing
+F1; a full-precision projection quantized only in width (the
+exact-$L_2$ series) reaches 1.00 top-1 at 2{,}048 bits, so most of
+the remaining gap is the quantizer rather than the projection.
+\textbf{Top-1 is markedly cheaper than threshold readout:} At every
+width the top-1 curve sits 0.15--0.2 above firing F1 -- a
+matchline-mode result: best-match mode tolerates a cheaper cell than
+threshold mode at equal fidelity.
+\textbf{Hamming and thermometer codes fall short here:} Both plateau
+near 0.74 top-1 and 0.49 firing F1 at $10^{3}$ bits, the opposite
+ordering from Sec.~\ref{sec:Results}. The workloads ask different
+questions -- separating two labeled classes there, reproducing a
+ranked list here -- and since a frozen projection removed the
+Euclidean advantage on the grid (Sec.~\ref{subsec:BitWidth}), the
+readout's advantage appears to come from its \emph{trained}
+projection as much as from the magnitude-preserving metric.
+
+\subsection{What full readout would cost}
+\label{subsec:ReadoutCost}
+Priced at 70B geometry, an uncompressed bank of 128K signatures is
+\qty{2.1}{\giga\byte} per layer; streaming it on every token at
+1{,}000 tokens/s over 25 layers is roughly
+\qty{53}{\tera\byte\per\second}. The useful answer stays small -- of order 25 patterns are
+active at any one time -- so the operation is detection rather than
+readout, the question a threshold-mode \cam answers natively. Three
+things would make it tractable: {\bf (1)} a \emph{watchlist} of the
+few hundred words known to be worth watching (the case demonstrated
+above, three orders of magnitude smaller, but it catches only what
+somebody thought to list); {\bf (2)} \emph{threshold matching}
+instead of ranking; and {\bf (3)} \emph{compressing the stored side}
+-- at 384--2{,}048 bits per row the whole 128K bank is
+6--\qty{33}{\mega\byte} per layer and fits on a die, provided it does
+not move. Only the first has been demonstrated here.
+% ===== end 06 - Large K.tex =====
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 07 - Hardware Analysis.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Hardware Implications}
+\label{sec:Hardware}
+\label{subsec:Tax}
+\label{subsec:CacheCliff}
+\textbf{Monitoring as a share of the host's own traffic:} A 70B
+model at fp8 reads roughly \qty{70}{\giga\byte} of weights per
+token; $K=100$K rows at $d=8{,}192$ add \qty{1.6}{\giga\byte}, about
+2\%. At the edge, an 8B model at 4-bit reads roughly
+\qty{4}{\giga\byte} per token, and $K=25$K at $d=4{,}096$ adds
+\qty{205}{\mega\byte}, about 5\%, rising to roughly 20\% by
+$K=100$K -- the same point arrives one to two orders of magnitude
+earlier in $K$ on parts with no HBM at any price and a
+15--\qty{60}{\watt} envelope.
+\textbf{The cache cliff:} A Jetson-class part has roughly
+\qty{4}{\mega\byte} of shared L2~\cite{nvidia_thor}; 500 stored fp16
+rows at $d=4{,}096$ -- the four campaign behaviors over 13 layers --
+is \qty{4.1}{\mega\byte}, that L2 almost exactly; below the cliff
+monitoring is close to free, above it the bank streams from LPDDR on
+every token. At the measured code widths today's banks compress back
+under the cliff (4{,}000 rows at 2{,}048 bits is about
+\qty{1}{\mega\byte}), but at whole-vocabulary scale even the
+compressed bank is out of cache.
+
+\subsection{Where the search engine could sit, and on what}
+\label{subsec:Placement}
+\label{subsec:Devices}
+A monitor co-resident on the inference GPU competes with live
+inference for cache and bandwidth; a \cam or CXL-attached appliance matches in place but sends
+the query over a board-level bus; a back-end-of-line search engine
+above GPU compute would keep query travel to microns with a
+nonvolatile static library, but no foundry PDK offers BEOL \fefet
+today, so it is a 2030s option.
+\dt[MN: confirm you want the BEOL clause in a DATE paper at all; it
+is the most speculative sentence in the section]{}
+The encodings decide the cell: a thermometer code needs only a
+binary SRAM \cam in any CMOS process; the \signrp ternary code needs
+wildcard capability, in CMOS \tcam at higher area or a two-transistor
+\fefet cell~\cite{ni2019fetcam}; a Euclidean matchline needs a
+multi-level device~\cite{kazemi2021fefetcam}, which the two workloads
+value differently -- no accuracy gain on the deception grid once the
+projection is frozen (Sec.~\ref{subsec:BitWidth}), a clear lead on
+the readout workload (Sec.~\ref{subsec:JspaceFidelity}). Whether that
+lead survives a common frozen projection decides whether an engine
+serving both ends of Fig.~\ref{fig:ladder} needs two cell types or
+one. Write endurance is not a constraint: the bank is rewritten per
+model release, not per token, which is what makes an NVM bank
+reasonable here.
+
+\subsection{Energy and latency, against a measured GPU baseline}
+\label{subsec:CostModelGap}
+\label{subsec:NextMeasurements}
+On the GPU, the dominant term at large $K$ is reading the bank out of
+DRAM: at a measured 3.97~pJ/bit for HBM2~\cite{oconnor2017fgdram},
+reading the \qty{2.1}{\giga\byte} whole-vocabulary bank once is
+roughly 67~mJ per token per layer before any arithmetic. A measured
+baseline sits above that: on an H100 PCIe, scanning the fp16 bank
+with the $k=31$ top-$k$ included costs 1.22~ms and 277~mJ per token
+at batch~1 and 21~$\mu$s and 4.7~mJ at batch~64 (at an achieved
+1.6--1.8~TB/s, so the $K\!\approx\!204$K crossing of
+Sec.~\ref{subsec:CostModel} is nearer 107K in practice). On the \cam
+side the same search is $K$ rows of 2{,}048-bit code compared in
+place, about $2.6\!\times\!10^{8}$ cell comparisons at the published
+0.1--1~fJ per cell per search for CMOS and fabricated \fefet
+arrays~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam}: roughly
+0.03--0.3~$\mu$J per token per layer, five to six orders of magnitude
+under the DRAM read. The gap is $64\times$ from the code width
+(2{,}048 stored bits against 131{,}072) and
+$\sim$$4\!\times\!10^{3}$ from the substrate.\footnote{The \cam figure is array-level (matchline and
+sense-amp energy), excluding the $\sim$$10^{6}$-MAC query projection
+and the mismatch-count reduction across subarrays; the 67~mJ
+estimate excludes distance arithmetic and cache reuse, which the
+measured rows include.} Compression also helps the GPU: a
+population-count search (FAISS) over the
+same 384-bit codes costs 28~$\mu$s and 2.1~mJ per token at batch~1
+(0.45~mJ above idle) and 0.5~$\mu$s and 0.04~mJ at batch~64, flat in
+$K$ from $10^{3}$ to 131K rows -- about 3\% of the part's per-token
+budget at $10^{3}$~tokens/s. What the array offers over that
+baseline is the search energy itself, 0.03--0.3~$\mu$J against
+40~$\mu$J--2~mJ, and freedom from contention with live inference,
+rather than bandwidth relief alone. Latency divides the same way:
+\tcam arrays report 0.3--4.4~ns per
+search~\cite{liu2022evacam,ni2019fetcam}, so a whole-bank search with
+subarrays in parallel plausibly completes in tens of nanoseconds,
+against 1.22~ms and 21~$\mu$s measured. Table~\ref{tab:costmodel}
+collects these entries; array-level characterization with
+Eva-CAM~\cite{liu2022evacam} at a stated node is what would replace
+the estimates.
+\dt[MN: framing check. As written, the popcount baseline makes the
+CAM case rest on search energy and non-contention rather than on
+bandwidth alone -- say if you want it framed differently. Numbers
+from IB's H100 PCIe runs, Sep 2026]{}
+
+\begin{table}[t]
+\centering
+\caption{The cost model at $K=1.3\!\times\!10^{5}$ rows, per token
+per layer. \textsc{est}: first-order values from literature figures
+(HBM at 3.97~pJ/bit~\cite{oconnor2017fgdram}; \cam cells at
+0.1--1~fJ/search~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam});
+\textsc{meas}: one H100 PCIe at batch 1 / batch 64.}
+\label{tab:costmodel}
+{\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Metric} & \textbf{\cam, 2{,}048-b rows} & \textbf{GPU, fp16 rows} &
+\textbf{GPU, 384-b codes} \\
+\midrule
+Energy / search & \makecell[c]{0.03--0.3\,$\mu$J\\\textsc{est}} &
+  \makecell[c]{277 / 4.7\,mJ\\\textsc{meas} (67\,mJ \textsc{est})} &
+  \makecell[c]{2.1 / 0.04\,mJ\\\textsc{meas}} \\
+Latency / search & \makecell[c]{0.3--4.4\,ns per array\\\textsc{est}} &
+  \makecell[c]{1.22\,ms / 21\,$\mu$s\\\textsc{meas}} &
+  \makecell[c]{28 / 0.5\,$\mu$s\\\textsc{meas}} \\
+Traffic / token & $d\,b\,L_{\mathrm{mon}}$ & $K\,d\,b\,L_{\mathrm{mon}}$ &
+  $K\,(48\,\mathrm{B})\,L_{\mathrm{mon}}$ \\
+Bank / layer & 33\,MB & 2.1\,GB & 6\,MB \\
+\bottomrule
+\end{tabular}}
+\end{table}
+% ===== end 07 - Hardware Analysis.tex =====
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ===== 08 - Conclusions.tex =====
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions}
+\label{sec:Conclusions}
+\label{subsec:Limitations}
+\label{subsec:Conclusions}
+\textbf{Limitations:} Nothing here competes with a deployed
+classifier; the measured claims concern the fidelity and cost of
+stored-signature matching, one component of the always-on stage of
+Sec.~\ref{sec:Introduction}. Deception is defined as an output that
+contradicts the known correct output; the grid results classify one
+activation per response rather than per token, at one tuned layer of
+one model. The hardware comparison has no contention term, and the
+\cam entries of Table~\ref{tab:costmodel} are literature-based
+estimates.
+\dt[regenerate Fig.~\ref{fig:jspace} from result files before
+submission -- the plotted values were digitized from the 07-30 deck]{}
+
+Always-on behavioral monitoring of a language model is a
+library-search problem whose coverage and cost are both set by $K$;
+at $K=1$ the operation is nearly free, while whole-vocabulary readout
+fixes $K\!\approx\!10^{5}$ per
+layer by construction. Accuracy alone does not establish that a
+memory-based detector is using its memory, and reporting front-end
+share alongside \auroc is what moved this work onto frozen
+projections. With them, a 384-bit code in a plain array holds
+in-domain deception \auroc within 0.009 of full-precision cosine
+similarity and gives up 0.065--0.126 cross-domain -- a gap that
+neither wider codes, a multi-bit cell, nor a pooled bank closes, so
+covering more behaviors means storing more rows -- and a 3-bit
+Euclidean code reproduces 0.96 of a whole-vocabulary readout's top-1
+selections at $128\times$ compression. That bank is
+6--\qty{33}{\mega\byte} per layer and fits on a die, and comparing it
+in place is estimated at four to six orders of magnitude below the
+measured energy of streaming it from HBM, and two to nearly five
+orders below a GPU population-count search over the same codes. What
+remains is Eva-CAM characterization at a stated node and, upstream of
+any hardware, establishing the minimum $K$ that adequate behavioral
+coverage requires.
+% ===== end 08 - Conclusions.tex =====
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+% ---------- review-only appendix (With Comments build only) ----------
+\reviewonly{%
+\clearpage
+\section*{\textcolor{aiviolet}{Length-cut log (not in the submission)}}
+\begin{pnote}[aiviolet]
+\textbf{Baseline (Sep 16):} v7 tree consolidated into this single
+file; 16 pages clean (${\approx}$14.7 body $+$ 1.3 references) against
+the DATE limit of 6 pages $+$ 1 for references. The full change history
+through v7 lives in the archived driver one level up.
+
+\textbf{Round 1 (Sep 16), structural, per IB's calls:} {\bf (1)}
+Sec.~III folded into Sec.~II as the ``Cost model'' subsection (labels
+kept, so every Sec.~III cross-reference still resolves). {\bf (2)}
+Limitations folded into one paragraph at the head of the Conclusions.
+{\bf (3)} Old VI-D (library-size sweep -- digitized data, three known
+bugs) cut; Fig.~5(c) is now orphaned and flagged. {\bf (4)} Old VII-F
+(the measurement list) cut; its cross-references rewritten, one
+sentence of remaining work stays in the Conclusions. {\bf (5)} The
+four-domain first-pipeline results paragraph in V-B cut (those numbers
+were the undergraduates' pipeline, not the ten-domain runs). {\bf (6)}
+Decision rule reworded per IB: the score is the fraction of deceptive
+rows among the 31 nearest, and \auroc is computed on it directly.
+{\bf (7)} All resolved review notes, the old commented-out IV-C, and
+the per-section history comments removed from the source; the open
+orange flags remain. No figure or table was changed in this round --
+those are being decided one at a time.
+
+\textbf{Round 2 (Sep 16), compression, per IB's ``keep going'':}
+{\bf (1)} \emph{Floats:} Fig.~1 is panel (b) alone (fig\_ladder\_v3;
+the $K$-vs-date panel and the anchor strip are gone, with the anchor
+paragraph); Fig.~2 is the ten-domain row alone (fig\_grids\_v3, labels
+renamed per IB); old Figs.~3, 4, 6 and Tables~IV, V cut, their numbers
+kept in the text; the readout figure is two panels at single-column
+width (fig\_jspace\_v2); the cost table is compacted to four rows and
+gains a measured GPU column. Figure sources: date/gen\_cut\_figs.py.
+{\bf (2)} \emph{Text:} every section rewritten to roughly 40\% of its
+length in the draft's voice rules; equations, the encoding
+definitions, the three-observation structure of Secs.~IV and V, and
+every quoted number are kept. Sec.~II-B (technologies) is folded into
+II-A; the bit-width subsection and the recombination result share one
+subsection (IV-C); Sec.~VI is three blocks (share-of-traffic and
+cache cliff, placement and cells, energy/latency).
+{\bf (3)} \emph{IB's results folded in:} matched cell count (768-b
+thermometer) in IV-B and Table~II; pooled bank in IV-B; 384-b
+label-shuffle control in IV-E (flagged: it is a different control from
+the randomized-bank audit); recombination (frozen RP, Euclidean vs
+Hamming) in IV-C, echoed in V-C and VI-A; H100 PCIe baselines (fp16
+bank and FAISS popcount) in VI-B and Table~VI, with a framing flag for
+MN; decision rule wording; domain renames.
+{\bf (4)} \emph{Dropped with their text:} schmidt2026interp,
+gao2024sae, lieberum2024gemmascope, kim2023alscn (unverified author
+list), apple2025foundation, indyk1998lsh, deepseekv3,
+anthropic2025cheapmonitors, the QAT footnote, the L$\cdot$d aside, the
+``not symmetric'' paragraph (closed by the matched-cell result), and
+MN's II-B placeholder flag (the subsection it marked no longer
+exists).
+\end{pnote}
+}
+
+\end{document}

@@ -1,0 +1,101 @@
+% ============================================================
+%  comments.tex -- annotation / review-flag system
+%
+%  STREAMLINED FLAG NAMES (Aug 2026, per MN: "this is just less typing"):
+%      \dt[note]{content}   was \dothis   / \dothisflag
+%      \eo[note]{content}   was \expandon / \expandonflag
+%  The old names are kept as aliases below, so every existing .tex
+%  still compiles unchanged. Semantics are identical.
+%
+%  All flags obey the showcomments boolean; compile.sh flips it.
+% ============================================================
+\usepackage{ifthen}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\usepackage{environ}
+\usepackage[most]{tcolorbox}
+
+\newboolean{showcomments}
+\setboolean{showcomments}{false}    % compile.sh targets this exact line -- keep it here
+
+% DEFAULT IS FALSE (no comments) so Overleaf produces the clean copy.
+% Run `bash compile.sh` to build both versions.
+
+\definecolor{flagorange}{RGB}{200, 95, 0}
+\definecolor{flagblue}{RGB}{0, 70, 190}
+\definecolor{aiviolet}{RGB}{120, 40, 180}
+\definecolor{dogreen}{RGB}{0, 130, 60}
+
+% ---- the two action flags -----------------------------------
+%  Uniform shape:  \flag[what to do]{content}
+%    \dt  orange -- an action to take
+%    \eo  blue   -- say more about this
+%  Content survives into BOTH builds; the bracketed note appears only
+%  in the With Comments build. With NO optional argument the braced
+%  text IS the note and disappears from the clean build entirely:
+%      \dt{fill in the submission date}          note only
+%      \dt[Trim this]{The library is short ...}  keep text, flag it
+%      \eo[Add numbers]{}                        note only
+\newcommand{\flagmark}[3]{%
+  \ifthenelse{\boolean{showcomments}}{{\color{#1}\bfseries[#2:\ #3]}\ }{}%
+}
+\newcommand{\dt}[2][]{%
+  \ifstrempty{#1}%
+    {\ifthenelse{\boolean{showcomments}}{{\color{flagorange}\bfseries[DO THIS:\ #2]}}{}}%
+    {\flagmark{flagorange}{DO THIS}{#1}#2}%
+}
+\newcommand{\eo}[2][]{%
+  \ifstrempty{#1}%
+    {\ifthenelse{\boolean{showcomments}}{{\color{flagblue}\bfseries[EXPAND:\ #2]}}{}}%
+    {\flagmark{flagblue}{EXPAND}{#1}#2}%
+}
+% ---- aliases (do not "clean these up") ----------------------
+\let\dothis\dt
+\let\dothisflag\dt
+\let\expandon\eo
+\let\expandonflag\eo
+
+% ---- reviewer remarks --------------------------------------
+% Inline remark:  \inote{short note}  /  \inote[aiviolet]{note}
+\newcommand{\inote}[2][red]{%
+  \ifthenelse{\boolean{showcomments}}{\textcolor{#1}{[#2]}}{}%
+}
+% Block remark. Escape underscores as \_ inside.
+%   \begin{pnote} ... \end{pnote}    or    \begin{pnote}[aiviolet] ... \end{pnote}
+\NewEnviron{pnote}[1][red]{%
+  \ifthenelse{\boolean{showcomments}}{\begingroup\color{#1}\BODY\endgroup}{}%
+}
+% Review-build-only content (whole paragraphs, tables, or a page).
+\newcommand{\reviewonly}[1]{\ifthenelse{\boolean{showcomments}}{#1}{}}
+
+% ---- structural boxes (always visible) ---------------------
+\newtcolorbox{sectionbox}{%
+  colback=black, coltext=white,
+  width=\linewidth, boxrule=0pt,
+  left=3pt, right=3pt, top=2pt, bottom=2pt,
+  fontupper=\sffamily\bfseries\normalsize,
+  sharp corners,
+  before=\par\vspace{4pt}, after=\par\vspace{2pt}}
+\newtcolorbox{subsectionbox}{%
+  colback=lightgray, coltext=black,
+  width=\linewidth, boxrule=0pt,
+  left=3pt, right=3pt, top=1pt, bottom=1pt,
+  fontupper=\sffamily\bfseries\small,
+  sharp corners,
+  before=\par\vspace{3pt}, after=\par\vspace{1pt}}
+
+% ---- per-author inline notes -------------------------------
+\makeatletter
+\newcommand{\mynote}[3]{%
+  \ifthenelse{\boolean{showcomments}}{%
+   \fbox{\bfseries\sffamily\scriptsize#1}%
+   {\small$\blacktriangleright$\textsf{\emph{\color{#3}{#2}}}$\blacktriangleleft$}}%
+  {\@bsphack\@esphack}%
+}
+\makeatother
+\definecolor{PersianGreen}{rgb}{0, 0.65, 0.58}
+\newcommand{\mn}[1]{\mynote{MN}{#1}{violet}}
+\newcommand{\ib}[1]{\mynote{IB}{#1}{PersianGreen}}
+\newcommand{\sj}[1]{\mynote{SJ}{#1}{blue}}
+\newcommand{\xh}[1]{\mynote{XH}{#1}{orange}}
