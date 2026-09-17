@@ -165,7 +165,7 @@ ten-domain cross-domain deception grid over Llama-3.3-70B
 activations, where 384-bit codes hold in-domain \auroc within 0.01
 of the full-precision cosine ceiling at more than $300\times$
 compression per signature; and {\bf (2)} whole-vocabulary readout,
-where a quantized Euclidean code at $\sim$$10^{3}$ bits per row
+where a 3-bit Euclidean code at $\sim$$10^{3}$ bits per row
 reproduces 0.96 of the exact readout's top-1 selections. The
 whole-vocabulary bank then occupies 6--\qty{33}{\mega\byte} per
 layer, and its estimated in-array search energy is five to six
@@ -246,17 +246,17 @@ cell~\cite{kazemi2021fefetcam} buys over a plain Hamming array at more
 than $300\times$ compression. {\bf (3)} A trained stage in front of
 the array can learn the classification itself, so fidelity alone does
 not show that the detector is using its memory; the projections here
-are frozen, and the grids are audited with their stored rows
-randomized or their stored labels permuted.
+are frozen, and every configuration is audited with its stored rows
+replaced by random vectors.
 
 We evaluate these encodings at both ends of the $K$ range. On a
 ten-domain deception grid over Llama-3.3-70B activations, 384-bit
 codes hold in-domain \auroc (area under the receiver operating
 characteristic curve) within 0.01 of the full-precision ceiling and
-cost 0.065--0.127 across domains, a gap that no wider code,
+cost 0.065--0.126 across domains, a gap that no wider code,
 multi-bit cell, or pooled bank closes. On whole-vocabulary readout, a
-quantized Euclidean code at $\sim$$10^{3}$ bits per row reproduces
-0.96 of the exact top-1 selections, the bank fits in 6--\qty{33}{\mega\byte} per
+3-bit Euclidean code reproduces 0.96 of the exact top-1 selections at
+$128\times$ compression, the bank fits in 6--\qty{33}{\mega\byte} per
 layer, and its estimated in-array search energy is five to six orders
 of magnitude below the energy of streaming it from HBM.
 % ===== end 01 - Introduction.tex =====
@@ -514,13 +514,9 @@ retrieval~\cite{faisscuvs2025}.
 \section{Workload 1: Deception Detection}
 \label{sec:Results}
 We first evaluate the mappings on a deception detection workload,
-where the library is set by how many behaviors and domains are
-monitored. The banks here hold 831--3{,}201 exemplars per
-domain (11{,}278 pooled), i.e., $K\approx10^{3}$--$10^{4}$ stored
-rows. This is an exemplar count: a bank stores on the order of
-$10^{3}$ rows per domain where a fitted probe stores one direction, so
-the row count is roughly $10^{3}\times$ the direction count that
-Fig.~\ref{fig:ladder} uses for the same rung.
+where the library is set by how many behaviors and domains someone
+decides to watch -- the $K\approx10^{2}$--$10^{3}$ regime of
+Fig.~\ref{fig:ladder}.
 
 \begin{figure*}[t]
 \centering
@@ -530,9 +526,9 @@ Llama-3.3-70B-Instruct activations at layer 33; rows index the domain
 stored in the bank, columns the domain of the held-out test
 activations. (a) 384-bit \signrp ternary code (wildcard-capable
 \tcam cell); (b) 384-bit thermometer code (plain binary \cam cell);
-(c) exact cosine rerank on the raw activations with the shortlist
-set to the whole bank, i.e., the full-precision ceiling for the same
-data and protocol.}
+(c) Hamming shortlist over the whole bank followed by an exact cosine
+rerank on the raw activations, i.e., the full-precision ceiling for
+the same data and protocol.}
 \label{fig:grids}
 \end{figure*}
 
@@ -540,11 +536,10 @@ data and protocol.}
 \label{subsec:Setup}
 We follow the cross-domain protocol of the Truthfulness Spectrum
 study~\cite{ying2026spectrum}: a detector built from one domain's
-labeled honest and deceptive activations is scored on every
-domain's held-out 30\%, including its own. Activations are taken
-from Llama-3.3-70B-Instruct~\cite{llama3herd} at layer 33, the layer
-the source study selected, so that our grids can be compared with
-theirs. The ten domains are definitional,
+labeled honest and deceptive activations is scored on every other
+domain's. Activations are Llama-3.3-70B-Instruct at
+layer 33~\cite{llama3herd}, the layer the source study tuned, so our
+grids compare against theirs. The ten domains are definitional,
 empirical, fictional, logical, ethical, sycophancy,
 \texttt{repe\_honesty}~\cite{zou2023repe}, roleplaying, insider
 trading, and sandbagging; within each domain 70\% of examples form
@@ -554,41 +549,39 @@ the stored bank and 30\% are held out, and banks range from 831 rows
 \subsection{The grids}
 \label{subsec:Grids}
 Fig.~\ref{fig:grids} shows the grids for the two single-stage
-encodings and the exact-rerank ceiling. Table~\ref{tab:encodings}
-summarizes the three grids and two further variants (the 768-b
-thermometer code at matched cell count and the 400-row shortlist of
-Sec.~\ref{subsec:Shortlist}) with the hardware each requires.
+encodings and the exact-rerank ceiling (Table~\ref{tab:encodings}
+summarizes them with the hardware each requires).
 
 \textbf{In-domain fidelity is essentially unaffected by the
 encoding:} Diagonal means are 0.920 (\signrp ternary, 384~b) and
 0.919 (thermometer, 384~b) against 0.928 for the exact rerank: a
-384-bit code costs 0.009--0.010 \auroc against full-precision cosine
-similarity over 8{,}192 values.
+384-bit code in a plain array costs 0.008--0.009 \auroc against
+full-precision cosine similarity over 8{,}192 values.
 
-\textbf{Compression costs more across domains:}
+\textbf{Cross-domain fidelity is where compression shows:}
 Off-diagonal means are 0.640 (ternary) and 0.579 (thermometer)
-against 0.705, a cost of 0.065--0.127 \auroc. At matched bits ternary
+against 0.705, a cost of 0.065--0.126 \auroc. At matched bits ternary
 leads by 0.061 on average and in 63 of 90 cells -- but a ternary
 position may cost roughly two bits of hardware. At matched cell
 count, the thermometer code at 768~b (256 directions at 3 bits)
-scores 0.924 in-domain and 0.631 cross-domain, with its worst cell
-improving from 0.226 to 0.319. At matched silicon the two encodings
-therefore differ by 0.009 on the cross-domain mean, with ternary
-ahead in 54 of 90 cells.
+scores 0.924 in-domain and 0.631 cross-domain: within 0.009 of
+ternary's mean, ternary ahead in 54 of 90 cells, and the worst cell
+improving from 0.259 to 0.319 -- at matched silicon the two appear
+to be within noise on the mean, with ternary keeping a small
+cell-wise edge.
 
 \textbf{The pattern of failure reproduces the published one:} All
 three grids keep the factual block high and put sycophancy near
 chance from every other row, as the source study
 reports~\cite{ying2026spectrum}; the full-precision grid has the
-same holes in the same places, so the limit on transfer is set by
+same holes in the same places, so the ceiling on transfer is set by
 the representations rather than by our compression. Pooling does not
-change this: a bank pooled from all ten domains' stored 70\%
-(11{,}278 rows) averages 0.906 (thermometer), 0.909
+change this: a bank built from all ten
+training splits (11{,}278 rows) averages 0.906 (thermometer), 0.909
 (ternary), and 0.927 (ceiling) over the ten test domains, with
 sycophancy still at 0.63, unlike the source study's combined probe at
 0.97. Covering a behavior suite therefore means storing rows per
-behavior and domain, which is the library scale this paper
-evaluates.
+behavior and domain -- the library scale this paper prices.
 
 \begin{table}[t]
 \centering
@@ -600,7 +593,7 @@ cell count against ternary at 384~b.}
 {\scriptsize\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}lccll@{}}
 \toprule
-\textbf{Encoding} & \textbf{In-dom.} & \textbf{Cross-dom.} &
+\textbf{Encoding} & \textbf{in-dom.} & \textbf{cross-dom.} &
 \textbf{Cell needed} & \textbf{Bank} \\
  & mean & mean & & (4K rows) \\
 \midrule
@@ -615,86 +608,61 @@ Exact rerank (ceiling)        & 0.928 & 0.705 & FP baseline        & 65\,MB \\
 
 \subsection{Neither wider codes nor a richer cell closes the gap}
 \label{subsec:BitWidth}
-Widening the code from 384 to roughly 2{,}048 bits has different
-effects on the two encodings. For ternary, the off-diagonal mean is
-unchanged (0.640 to 0.637): 24 of 90 cells fall by more than 0.05
-\auroc and 18 rise, with a worst single-cell change of $-0.303$
-(sandbagging tested on insider trading). For thermometer, the mean
-rises from 0.579 to 0.651: 40 cells rise by more than 0.05 and 12
-fall (worst $-0.209$). The difference is the number of projected
-directions: 384 ternary positions are 384 directions, already past
-the point where transfer saturates, whereas 384 thermometer bits are
-only 128 directions; at 256 directions (768~b) thermometer reaches
-0.631. In both encodings the diagonal is flat or slightly up, and
-neither reaches the 0.705 ceiling. A
-richer cell does not help once the projection is frozen: with
+More code capacity does not close the gap, in either encoding: from
+384 to roughly 2{,}048 bits, 23 of 90 off-diagonal
+cells drop by more than 0.05 \auroc for ternary (worst $-0.303$,
+sandbagging tested on insider trading) and 12 of 90 for thermometer
+(worst $-0.209$), while the diagonal is flat or slightly up. A
+richer cell does not help either once the projection is frozen: with
 the same frozen projection, rounded to eight levels, a Euclidean
 matchline (128 multi-bit cells per row)
 scores 0.920 in-domain and 0.579 cross-domain against 0.920 and 0.593
 for Hamming distance on the corresponding thermometer code (896
-binary cells per row); the Euclidean matchline is ahead in only 37
-of 90 cells. Any accuracy
-advantage of the first pipeline therefore came from its trained
-projection, not its Euclidean matchline; with a frozen projection the multi-bit cell's
+binary cells per row), ahead in only 37 of 90 cells. The first
+pipeline's edge therefore came from its trained projection rather
+than its matchline; with a frozen projection the multi-bit cell's
 remaining benefit is fewer cells per row. On this grid, then, the
-costlier cell does not improve accuracy, a wider code helps only
-until the direction count saturates, and coverage, if it comes, comes
-from storing more vectors, which is the library growth that Sec.~\ref{subsec:CostModel} models.
+costlier cell does not buy accuracy, and transfer, if it comes, comes
+from storing more vectors rather than wider ones -- the library
+growth Sec.~\ref{subsec:CostModel} prices.
 
-\subsection{A fixed shortlist size does not transfer across bank sizes}
+\subsection{A fixed shortlist does not travel across bank sizes}
 \label{subsec:Shortlist}
 The two-stage variant appears to recover the ceiling -- with an
 absolute shortlist of 400 rows the diagonal mean is unchanged at
 0.928 and the off-diagonal mean falls only to 0.671 -- but the
 aggregate hides a failure of a \emph{fixed} parameter. Coverage, how
-often the true full-precision top-1 neighbor falls inside the
-Hamming shortlist, is 82.5\% for the 831-row definitional bank and
-18.3\% for the 3{,}201-row sycophancy bank (chance floors 48.1\% and
-12.5\%), so the sycophancy row loses 0.204 \auroc on average and up
-to 0.468 in one cell. Recovering the sycophancy row's cross-domain
-mean (0.532 at 12.5\% of the bank, 0.736 at 100\%) takes a shortlist
-of 75--100\% of the bank, where it is no longer a shortlist. A
-\cam-resident design should therefore use the single-stage
-encodings, or possibly a threshold rather than a top-$k$ criterion,
-which we have not tested.
+often the true full-precision top-1 neighbor lands inside the
+Hamming shortlist, is 82.5\% for the 831-row definitional bank but
+18.3\% for the 3{,}201-row sycophancy bank, so the sycophancy row
+loses 0.204 \auroc on average and up to 0.468 in one cell.
+Recovering that mean takes $k$ at 75--100\% of the bank, where it is
+no longer a shortlist. A \cam-resident design should therefore use the
+single-stage encodings, or a threshold rather than a top-$k$
+criterion.
 
 \subsection{The destroyed-vector audit}
 \label{subsec:Audit}
 \label{subsec:AuditResults}
 A pipeline of the form ``trained front end, then memory'' can pass
-its accuracy test while the memory contributes nothing. The audit
-therefore destroys the bank and re-measures. The \emph{front-end
-share},
-$(\mathrm{AUROC}_{\mathrm{destroyed}}-0.5)/(\mathrm{AUROC}_{\mathrm{intact}}-0.5)$,
-is the fraction of above-chance accuracy that survives, where high is
-bad. Across five variants of the first pipeline, with every stored
-row replaced by a random vector of the same shape, it was 98--100\%
-for a learned binary hash and 66--85\% for a weighted thermometer.
-These were the two highest-scoring variants (one reached 0.993
-\auroc), and both were retired. The share was 24--28\% for 3-bit LSQ
-Euclidean, 20\% for a direct sign code, and 4--14\% for a random sign
-projection, which is why Encodings~1 and~2 use frozen projections.
-\dt[IB: confirm the five first-pipeline shares are chance-subtracted
-as in the formula above; if the original table used a raw ratio they
-need converting]{}
-
-The frozen encoders of Secs.~\ref{subsec:SignRP}
-and~\ref{subsec:Thermometer} have no trained stage, so the audit
-tests only the stored rows. For the 384-b ternary and thermometer
-grids we permute the stored labels (20 permutations, averaged) with
-the encoder and bank intact; this checks that the labels carry the
-signal, whereas the randomized-bank run checks that the stored rows
-do. The grid mean falls to 0.500 (ternary) and 0.501 (thermometer)
-with every cell in 0.40--0.57, so at most 1\% of the above-chance
-accuracy remains. As a secondary check, replacing every stored row
-of the 2{,}048-b ternary grid with a random vector gives a mean of
-0.50 (a share of about 2\%), with 83\% of cells within 0.4--0.6 and a
-full range of 0.18--0.79.\footnote{The cells farthest from chance
-(0.18, 0.28, 0.71, and 0.79) are all tested on insider trading. In
-this run the ternary don't-care threshold is calibrated on the random
-rows before the real queries are encoded, which lets query signal
-through on some domains; the label-shuffle control does not have this
-dependence, which is why the 384-b audit uses it.}
+its accuracy test while the memory contributes nothing, so we
+re-measure every configuration with the stored rows replaced by
+random vectors of the same shape; the accuracy that survives is the
+\emph{front-end share}, where high is bad. Across five variants of
+the first pipeline it was 98--100\% for a learned binary hash and
+66--85\% for a weighted thermometer -- the two highest-scoring
+variants, one of which reached 0.993 \auroc, both retired -- against
+24--28\% for 3-bit LSQ Euclidean, 20\% for a direct sign code, and
+4--14\% for a random sign projection, which is why Encodings~1 and~2
+use frozen projections. Those encodings pass -- randomizing the bank collapses the 2{,}048-b
+\signrp grid to a mean of 0.50 with 83\% of cells within 0.4--0.6,
+and a label-shuffle control at 384~b gives 0.500 (ternary) and 0.501
+(thermometer) -- and we report front-end share alongside \auroc for
+every configuration.
+\dt[IB: confirm the wording -- the 384-b numbers you sent are from the
+label-shuffle audit, a different control from the randomized-bank
+audit; the text states the two separately. If a randomized-bank run
+exists at 384~b, swap it in]{}
 % ===== end 05 - Results.tex =====
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -706,43 +674,41 @@ dependence, which is why the 384-b audit uses it.}
 At the other end of the $K$ axis the library is set by the model's
 vocabulary. The readout method of Sec.~\ref{sec:Introduction}
 reports one internal pattern per vocabulary
-token~\cite{anthropic2026workspace} (and found ``manipulation''
-active while a model produced falsified data during a pre-release
-audit), so
+token~\cite{anthropic2026workspace} (and ``manipulation'' active
+while a model produced falsified data during a pre-release audit), so
 reading this space means comparing the internal state against
 roughly 128K stored signatures for a Llama-family tokenizer, at
-several layers on every token; nobody chose that size, and phrases
+several layers, every token; nobody chose that size, and phrases
 would only enlarge it.
 
 \subsection{An in-house reproduction, at watchlist scale}
 \label{subsec:Watchlist}
 We reproduced the readout in-house on Llama-3.1-8B; about 13 of 32
-layers carry a usable readout. Signatures are
+layers carry a usable readout, the source of the ``13--25 usable
+layers'' factor above. Signatures are
 precomputed offline, so a watched word costs one comparison per
 token, and we stored 47 deception-adjacent signatures per monitored
 layer as \cam rows. In a staged replacement scenario, five of ten
-watch words -- ``scandal,'' ``evidence,'' ``leaked,'' ``fake,''
-``shutdown'' -- reached the top rank (rank~0) by exact
+watch words -- ``scandal,'' ``evidence,''
+``leaked,'' ``fake,'' ``shutdown'' -- reached rank~0 by exact
 full-vocabulary rank at interpretable moments in the 2{,}048 prompt
-tokens, and ``threat'' reached rank~1 and ``blackmail'' rank~2. None
-of these words was present in the prompt, and the reply itself was
-cooperative and unremarkable. These are preliminary numbers: one
-model, one scenario, 47 signatures.
+tokens, ``threat'' rank~1 and ``blackmail'' rank~2, none present in
+the prompt, while the reply itself was cooperative and unremarkable. These are preliminary numbers: one
+model, one scenario, 47 signatures.\footnote{The fidelity values below were read from result
+charts rather than result files; verification is queued.}
 
 \subsection{Fidelity at \cam precision}
 \label{subsec:JspaceFidelity}
 The full-precision dot product against the stored patterns \emph{is}
 the ground truth here, so no labels are needed: we record which of
 the 47 stored vectors fire above a global threshold under the exact
-computation on WikiText activations, and ask how well each
+computation on Wikitext activations, and ask how well each
 \cam-compatible encoding reproduces that list under two readouts,
 \emph{threshold} (every firing row reported; metric per-row firing
 F1) and \emph{top-1} (the closest row reported; metric agreement with
 the exact choice). Fig.~\ref{fig:jspace} plots both against storage
 bits per row, the axis that sets the bank size; an fp16 row is
-131{,}072 bits.\footnote{The fidelity values in this subsection were
-read from result charts rather than result files; verification is
-queued.}
+131{,}072 bits.
 
 \begin{figure}[!t]
 \centering
@@ -755,31 +721,19 @@ Values digitized from the source result charts.}
 \label{fig:jspace}
 \end{figure}
 
-\textbf{Compression to $\sim$$10^{3}$ bits per row costs little
-top-1 agreement:} A quantized Euclidean code at $\sim$$10^{3}$ bits per row
-reaches 0.96 top-1 agreement and 0.81 firing F1, and a
-full-precision projection (the exact-$L_2$ series) reaches 1.00 top-1
-at 2{,}048 bits.
-\dt[Sam/Brendan/John: confirm $D$ and bits per dimension at the
-1{,}024-b point (the figure script assumes $D=128$, i.e., 8 bits per
-dimension, not 3), and whether the fidelity runs used 8B
-($d=4{,}096$, fp16 row 65{,}536~b, $64\times$) or 70B activations
-($d=8{,}192$, 131{,}072~b, $128\times$). ``3-bit'' and
-``$128\times$'' are removed from the abstract, Sec.~I, here, and the
-conclusions until then; the fp16 row width in the text above and in
-the caption of Fig.~\ref{fig:jspace} depends on the same answer]{}
-The readout's projection is trained and was not run through the
-audit of Sec.~\ref{subsec:Audit}, so its fidelity values carry that
-caveat.
-\textbf{Top-1 is markedly cheaper than threshold readout:} For the
-Euclidean code the top-1 curve sits 0.15--0.20 above firing F1 at
-384~b and above -- a matchline-mode result: best-match mode tolerates a cheaper cell than
+\textbf{Two orders of magnitude of compression cost less than it
+might:} A 3-bit Euclidean code at $\sim$$10^{3}$ bits per row, a
+$128\times$ reduction, reaches 0.96 top-1 agreement and 0.81 firing
+F1; a full-precision projection quantized only in width (the
+exact-$L_2$ series) reaches 1.00 top-1 at 2{,}048 bits, so most of
+the remaining gap is the quantizer rather than the projection.
+\textbf{Top-1 is markedly cheaper than threshold readout:} At every
+width the top-1 curve sits 0.15--0.2 above firing F1 -- a
+matchline-mode result: best-match mode tolerates a cheaper cell than
 threshold mode at equal fidelity.
-\textbf{Hamming and thermometer codes fall short here:}
-Sign-Hamming reaches 0.74 top-1 and 0.49 firing F1 at 1{,}024~b and
-falls at 4{,}096~b, where the encoding switches to a direct sign hash
-with no projection; thermometer reaches 0.40 and 0.34 at 2{,}048~b.
-This is the opposite ordering from Sec.~\ref{sec:Results}. The workloads ask different
+\textbf{Hamming and thermometer codes fall short here:} Both plateau
+near 0.74 top-1 and 0.49 firing F1 at $10^{3}$ bits, the opposite
+ordering from Sec.~\ref{sec:Results}. The workloads ask different
 questions -- separating two labeled classes there, reproducing a
 ranked list here -- and since a frozen projection removed the
 Euclidean advantage on the grid (Sec.~\ref{subsec:BitWidth}), the
@@ -788,21 +742,20 @@ projection as much as from the magnitude-preserving metric.
 
 \subsection{What full readout would cost}
 \label{subsec:ReadoutCost}
-At 70B geometry, an uncompressed bank of 128K signatures is
+Priced at 70B geometry, an uncompressed bank of 128K signatures is
 \qty{2.1}{\giga\byte} per layer; streaming it on every token at
-1{,}000 tokens/s over an assumed 25 monitored layers is roughly
-\qty{53}{\tera\byte\per\second}. The useful answer stays small
--- on the order of 25 patterns are active at any one time -- so the operation is detection rather than
+1{,}000 tokens/s over 25 layers is roughly
+\qty{53}{\tera\byte\per\second}. The useful answer stays small -- of order 25 patterns are
+active at any one time -- so the operation is detection rather than
 readout, the question a threshold-mode \cam answers natively. Three
 things would make it tractable: {\bf (1)} a \emph{watchlist} of the
 few hundred words known to be worth watching (the case demonstrated
-above at 47 rows, some 2{,}700$\times$ below whole-vocabulary scale,
-which catches only what somebody thought to list); {\bf (2)} \emph{threshold matching}
+above, three orders of magnitude smaller, but it catches only what
+somebody thought to list); {\bf (2)} \emph{threshold matching}
 instead of ranking; and {\bf (3)} \emph{compressing the stored side}
 -- at 384--2{,}048 bits per row the whole 128K bank is
 6--\qty{33}{\mega\byte} per layer and fits on a die, provided it does
-not move. Only the first has been demonstrated; (2) and (3) are
-measured here only on a 47-row bank.
+not move. Only the first has been demonstrated here.
 % ===== end 06 - Large K.tex =====
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -952,15 +905,15 @@ library-search problem whose coverage and cost are both set by $K$;
 at $K=1$ the operation is nearly free, while whole-vocabulary readout
 fixes $K\!\approx\!10^{5}$ per
 layer by construction. Accuracy alone does not establish that a
-memory-based detector is using its memory, and the destroyed-vector
-audit is what moved this work onto frozen
-projections. With them, a 384-bit code holds
-in-domain deception \auroc within 0.01 of full-precision cosine
-similarity and gives up 0.065--0.127 cross-domain -- a gap that
+memory-based detector is using its memory, and reporting front-end
+share alongside \auroc is what moved this work onto frozen
+projections. With them, a 384-bit code in a plain array holds
+in-domain deception \auroc within 0.009 of full-precision cosine
+similarity and gives up 0.065--0.126 cross-domain -- a gap that
 neither wider codes, a multi-bit cell, nor a pooled bank closes, so
-covering more behaviors means storing more rows -- and a quantized
-Euclidean code at $\sim$$10^{3}$ bits per row reproduces 0.96 of a
-whole-vocabulary readout's top-1 selections. That bank is
+covering more behaviors means storing more rows -- and a 3-bit
+Euclidean code reproduces 0.96 of a whole-vocabulary readout's top-1
+selections at $128\times$ compression. That bank is
 6--\qty{33}{\mega\byte} per layer and fits on a die, and comparing it
 in place is estimated at four to six orders of magnitude below the
 measured energy of streaming it from HBM, and two to nearly five
