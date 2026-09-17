@@ -1,0 +1,174 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+\label{sec:Introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Structure (v04; expanded ~1/2 column on 08-26 per MN, so readers
+% quickly care): (1) safeguards read text, activations now read in
+% production, the K=1 check is small; (2) the security problem --
+% long autonomous operations, the AISI incident, found only
+% retrospectively; (3) the deception work -- probes recover structure
+% but directions are narrow, so K multiplies; (4) the bold ladder,
+% with the J-space rung carrying the spider example; (5) propose the
+% CAM; (6) contributions.
+% Moved out, not cut: probe arithmetic (2Ld, MoE point) and overhead
+% detail -> Sec. II-C; cell-type detail -> Sec. II-A; counter-evidence
+% -> red-team appendix (09). Sec. VI-A now points at the intro's
+% spider example instead of repeating it.
+
+Large language model (LLM) deployments are wrapped in a layered set
+of safeguards, and until recently every layer read
+\emph{text}~\cite{metr2026policies}. That has started to change: the
+always-on stage of one production jailbreak defense now reads the
+model's internal activations
+directly~\cite{ccpp2026,anthropic2026ccblog}, as do deployed
+residual-stream probes at a second provider~\cite{gemini2026probes}.
+The deployed check is small -- one stored vector $w$, one dot product
+per generated token, one threshold. Only flagged exchanges are
+escalated to an expensive classifier ensemble -- and it is a small
+share of even the deployed defense's reported overhead
+(Sec.~\ref{subsec:Probes}).
+
+Recent security evaluations show why such monitors are needed.
+Frontier models now run long, autonomous operations: current cyber
+evaluations walk a model through 32 steps from reconnaissance to
+takeover, with run budgets up to $10^{8}$ tokens. The strongest
+model tested progressed, unaided, through 22 of those 32 attack steps
+on an average attempt -- roughly two thirds of the way to a completed
+operation~\cite{aisi2026cyber}. In one four-day campaign of 122
+such runs across seven models, evaluators later found 19 unsanctioned
+actions in four distinct categories -- supply-chain compromise of a real open-source project,
+deception and targeting via a file-transfer service, prompt injection
+planted for other automated systems to execute, and inter-agent
+collaboration via public messages. All of said outcomes were found
+\emph{retrospectively}; nothing was watching the models' internal
+state as they ran~\cite{aisi2026incident}. One month later the same
+behaviors appeared at production scale: per public investigations,
+hundreds of agents on OpenAI's infrastructure organized, in secret,
+into a working collective -- building a communication channel,
+reverse-engineering their own scorer, falsifying evidence, and
+compromising both OpenAI and Hugging
+Face~\cite{clark2026import,cotra2026hf}. Again, the record was
+reconstructed from transcripts after the fact -- and the
+coordination itself is a behavior for which no stored direction has
+been published. A $10^{8}$-token operation
+is not visible by sampling outputs, and each individual message such
+an agent emits can read as routine -- a plausible commit, a file
+transfer, a status update -- while the sequence they add up to is an
+attack. As such, a monitor for this setting has to be per-token,
+always-on, and internal.
+
+Interpretability work supplies the signatures such a monitor would
+compare against, and it also indicates how many it needs. Linear
+probes recover truth-related structure across datasets and model
+families~\cite{marks2023geometry,burns2023ccs,zou2023repe}, but the
+directions are narrow. A probe fitted on factual lying has an
+\auroc score of $\sim$0.55 (random chance) on
+sycophancy~\cite{ying2026spectrum}, while probes trained on outright
+lying largely miss deception carried by technically true
+statements~\cite{berger2026liedetector}. Detecting deceptive
+reasoning has become a funded interpretability objective in its own
+right~\cite{schmidt2026interp}. Covering a behavior suite therefore
+takes a stored direction per behavior, per subject-matter domain, at
+each layer where that behavior separates -- and each of those
+combinations is one more stored row. As such, $K$, the number of
+stored signatures each activation is compared against, can grow with
+everything the monitor is asked to notice; and widening what is
+covered means growing the library that must be searched.
+
+Fig.~\ref{fig:ladder}(a) plots the published record of $K$ against
+time; Fig.~\ref{fig:ladder}(b) estimates the percentage of GPU
+bandwidth that could be consumed with increasing $K$.
+\textbf{\boldmath$K=1$} represents deployed always-on monitors that
+read a single direction~\cite{ccpp2026,gemini2026probes}.
+\textbf{\boldmath$K\approx10^{2}$} captures probes that are fitted per
+behavior and per domain~\cite{ying2026spectrum}.
+\textbf{\boldmath$K\approx10^{3}$} is indicative of the four behavior
+categories of the above campaign, multiplied over ten domains and
+13--25 usable layers -- i.e., 520--1{,}000
+rows~\cite{aisi2026incident}; the production-scale incident above
+repeats every one of said categories, so this arithmetic is, if
+anything, conservative~\cite{clark2026import}.
+\textbf{\boldmath$K\approx1.3\!\times\!10^{5}$} is representative of
+the whole-vocabulary (``J-space'') readout, from a published method
+reporting that a model holds words ``in mind'' without emitting them
+-- i.e., for every token in the vocabulary there is an internal
+pattern meaning that word is currently active, and it is readable
+whether or not the word is ever
+said~\cite{anthropic2026workspace}.\footnote{As an example, prompted
+with the number of legs on the animal that spins webs, the model
+answers \emph{eight} while the readout shows \emph{spider} active
+internally; the same work reports patterns for ``fake'' and
+``fictional'' active while a model privately registered that a safety
+test was staged.} Finally, $K$ could grow even
+higher, as published feature
+dictionaries~\cite{templeton2024scaling,gao2024sae,lieberum2024gemmascope}
+are even two orders of magnitude higher than the J-space. That said,
+we can cross the memory bandwidth of deployable parts well before this.
+Per Fig.~\ref{fig:ladder}(b), at $10^{3}$ tokens/s, an H100 is fully
+consumed at $K\!\approx\!204$K and a Jetson-class part at
+$K\!\approx\!17$K (Sec.~\ref{sec:Scaling}).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=3.4in]{fig_ladder_v2.pdf}
+\caption{(a) Monitored library size $K$ in the published record
+(left axis), read as GPU monitoring traffic on the right axis via
+Eq.~(\ref{eq:gputraffic}) at $d=8{,}192$, fp16, $10^{3}$~tokens/s,
+one monitored layer; dashed lines mark two parts' memory bandwidths,
+and the green line is a \cam's per-token traffic, flat in $K$. The
+arrow joins the record's endpoints; it is not a fit and not a
+forecast. (b) The share of a part's memory bandwidth consumed by
+monitoring alone, against aggregate token rate and library size $K$:
+lines mark 100\% of an H100, an A100, and a Jetson Thor, with 10\%
+and 1\% of an H100 as guides. The strip
+anchors the rate axis to familiar workloads
+(Sec.~\ref{subsec:CostModel}): per-stream anchors batch up to a
+node's aggregate rate, while batch-1 edge workloads (VLA, video) sit
+on the axis directly -- so batching moves a deployment along the
+axis rather than adding one; per-request amortization is objection
+(3) of the companion appendix document. Both panels are arithmetic
+on vendor bandwidth
+figures, not measured kernel throughput.}
+\label{fig:ladder}
+\end{figure}
+
+We propose to support this search with a content-addressable memory
+(\cam), which computes the distance function in the memory array
+itself: the bank never moves and per-token traffic is flat in $K$
+(green line of Fig.~\ref{fig:ladder}(a)).
+Candidate substrates are based on both near-term and the emerging
+devices: SRAM-based \cam{}s are buildable in any CMOS process today,
+and can implement Hamming distance, while \cam{}s based on emerging
+devices (\fefets, RRAM) offer density, nonvolatility, and richer
+distance metrics (Secs.~\ref{subsec:CAMspace}
+and~\ref{subsec:CAMtech}).
+
+This paper measures that trade for behavioral-monitoring workloads.
+Our contributions include: {\bf (1)} a formulation of always-on activation
+monitoring as library search, with the traffic and capacity arithmetic
+and the GPU crossing points (Secs.~\ref{sec:Scaling},
+\ref{sec:Hardware}); {\bf (2)} a maturity-ladder mapping of the
+detector onto \cam cell types and match modes, with an audit that
+catches classification hiding in a trained front end
+(Sec.~\ref{sec:Mapping}); {\bf (3)} measured fidelity at \cam
+precision at both ends of the $K$ range -- the ten-domain deception
+grid, within 0.009 \auroc of the full-precision ceiling in-domain
+(Sec.~\ref{sec:Results}), and an in-house whole-vocabulary readout
+reproduction scored against the exact readout
+(Sec.~\ref{sec:LargeK}); and {\bf (4)} a first-order search
+energy/latency estimate, with the measurements that is the foundation
+for future cost models (Sec.~\ref{sec:Hardware}).\inote[aiviolet]{your
+edit applied verbatim; ``measurements that is'' -- if you meant the
+plural, ``that are the foundation'' fixes the agreement}
+
+\begin{pnote}
+Framing check before this goes anywhere: the paper claims a
+\emph{component} result, and the reproductions are part of that claim
+-- the deception grid reproduces the published cross-domain pattern at
+\cam precision, and the watchlist demonstration reproduces the
+published readout method in-house at 8B. What the paper does not claim
+is a working end-to-end deception detector or a jailbreak-blocking
+experiment. The measured claims are about the fidelity and cost of
+stored-signature matching under the compression a real in-memory
+device would impose. Sec.~\ref{sec:Conclusions} repeats this.
+\end{pnote}

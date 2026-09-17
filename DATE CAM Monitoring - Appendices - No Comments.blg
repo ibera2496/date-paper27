@@ -1,0 +1,58 @@
+This is BibTeX, Version 0.99d (TeX Live 2022/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: DATE CAM Monitoring - Appendices - No Comments.aux
+The style file: IEEEtran.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Database file #1: refs.bib
+Warning--I didn't find a database entry for "IEEEexample:BSTcontrol"
+-- IEEEtran.bst version 1.14 (2015/08/26) by Michael Shell.
+-- http://www.michaelshell.org/tex/ieeetran/bibtex/
+-- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
+
+Done.
+You've used 7 entries,
+            4087 wiz_defined-function locations,
+            864 strings with 8747 characters,
+and the built_in function-call counts, 4155 in all, are:
+= -- 344
+> -- 85
+< -- 20
++ -- 44
+- -- 16
+* -- 208
+:= -- 720
+add.period$ -- 14
+call.type$ -- 7
+change.case$ -- 8
+chr.to.int$ -- 48
+cite$ -- 7
+duplicate$ -- 303
+empty$ -- 336
+format.name$ -- 21
+if$ -- 921
+int.to.chr$ -- 0
+int.to.str$ -- 7
+missing$ -- 55
+newline$ -- 54
+num.names$ -- 7
+pop$ -- 138
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 2
+skip$ -- 317
+stack$ -- 0
+substring$ -- 121
+swap$ -- 214
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 5
+type$ -- 7
+warning$ -- 0
+while$ -- 15
+width$ -- 8
+write$ -- 98
+(There was 1 warning)

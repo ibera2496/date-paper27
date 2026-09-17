@@ -14,45 +14,45 @@ Warning--I didn't find a database entry for "IEEEexample:BSTcontrol"
 -- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
 
 Done.
-You've used 36 entries,
+You've used 33 entries,
             4087 wiz_defined-function locations,
-            989 strings with 13160 characters,
-and the built_in function-call counts, 17791 in all, are:
-= -- 1419
-> -- 381
+            975 strings with 12679 characters,
+and the built_in function-call counts, 16612 in all, are:
+= -- 1317
+> -- 365
 < -- 46
-+ -- 193
-- -- 84
-* -- 762
-:= -- 3029
-add.period$ -- 72
-call.type$ -- 36
-change.case$ -- 37
++ -- 185
+- -- 80
+* -- 716
+:= -- 2798
+add.period$ -- 66
+call.type$ -- 33
+change.case$ -- 34
 chr.to.int$ -- 96
-cite$ -- 36
-duplicate$ -- 1448
-empty$ -- 1648
-format.name$ -- 103
-if$ -- 4050
+cite$ -- 33
+duplicate$ -- 1349
+empty$ -- 1537
+format.name$ -- 98
+if$ -- 3791
 int.to.chr$ -- 0
-int.to.str$ -- 36
-missing$ -- 285
-newline$ -- 151
-num.names$ -- 35
-pop$ -- 760
+int.to.str$ -- 33
+missing$ -- 265
+newline$ -- 138
+num.names$ -- 32
+pop$ -- 704
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 2
-skip$ -- 1396
+skip$ -- 1305
 stack$ -- 0
-substring$ -- 280
-swap$ -- 906
+substring$ -- 277
+swap$ -- 851
 text.length$ -- 14
 text.prefix$ -- 0
 top$ -- 5
-type$ -- 36
+type$ -- 33
 warning$ -- 0
-while$ -- 53
-width$ -- 38
-write$ -- 353
+while$ -- 50
+width$ -- 35
+write$ -- 323
 (There was 1 warning)

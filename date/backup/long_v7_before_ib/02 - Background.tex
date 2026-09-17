@@ -1,0 +1,222 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Background}
+\label{sec:Background}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Restructured in v04 per MN's flag: (A) CAM design space first;
+% (B) a technology-implementations placeholder MN will fill, seeded
+% with the BEOL material; (C) preliminaries (the probe/AUROC material,
+% trimmed, plus the probe-cost arithmetic moved out of the intro) and
+% related work.
+
+\subsection{The CAM design space}
+\label{subsec:CAMspace}
+Ordinary memory takes an address and returns content, so searching a
+library means reading it row by row. A \cam compares every row
+against the query at once, in place, and only reports matching
+rows~\cite{pagiamtzis2006cam}. One access is therefore one search of
+the whole library, at any library size, and the data that moves is the
+query rather than the bank.
+
+A \textbf{binary \cam} (BCAM) cell holds one bit. A
+\textbf{ternary \cam} (\tcam) cell holds a bit or a don't-care, which
+is what makes a stored ternary code with a zero band natively
+expressible~\cite{ni2019fetcam}. A \textbf{multi-bit \cam} (\mcam) cell
+holds one of several levels~\cite{kazemi2021fefetcam}. An
+\textbf{analog \cam} (\acam) cell
+holds a range~\cite{li2020acam}. A binary or ternary cell can report
+only whether a position disagrees, and can measure Hamming
+distance. A multi-bit or analog cell stores a level,
+which is what lets the matchline measure how far the query sits from
+what is stored. In a multi-bit \fefet implementation, sweeping the query
+voltage traces a V-shaped matchline current with its minimum at the
+stored level; the curve is approximately quadratic near the bottom, so
+one cell physically computes $(Q_i-M_i)^2$ and $N$ cells on a common
+matchline sum to $\sum_i (Q_i-M_i)^2$, a squared Euclidean distance with
+no multiplier anywhere~\cite{kazemi2021fefetcam} (see Table~\ref{tab:camspace}). Notably, said cell
+behavior has been \emph{measured}, not only modeled: multi-bit,
+array-level \cam operations have been experimentally demonstrated
+with \fefets -- a two-\fefet cell programmed to eight states (3
+bits), whose measured matchline distance function shows the
+quadratic behavior described above~\cite{kazemi2022hdcfefet}.\inote[aiviolet]{Sep 2,
+your Table~I note: the measured-FeFET-CAM mention, from the
+Scientific Reports paper you attached (Kazemi et al.\ 2022) -- the
+same source now also carries the subarray-split practice in
+Sec.~IV-C}\footnote{Squared
+Euclidean is an acceptable stand-in for Euclidean here, since the square
+root is monotonic and therefore changes neither which row is closest nor
+which rows clear a threshold.}
+
+With appropriate peripheral circuitry we can measure: \textbf{exact}
+match reports rows with no mismatches; \emph{best} match reports the
+row with the fewest, even when nothing is exact; \textbf{threshold}
+match reports
+every row within a limit $\tau$.\inote[aiviolet]{Note: your
+``Bold'' arrow touched \emph{exact} and \emph{threshold}; \emph{best}
+is left italic -- say the word if all three should match} Each is a different matchline circuit.
+Threshold mode matters for monitoring because the expected answer is
+almost always empty, and a threshold array can report ``nothing fired''
+without ranking anything. Table~\ref{tab:camspace} summarizes the
+design space; notably, the cheapest cells support only Hamming
+distance, which is why encodings that hold accuracy under a Hamming
+metric are potentially valuable. A goal of what follows is to
+quantify what an emerging-technology \cam can or cannot buy: where
+the multi-bit cells of Table~\ref{tab:camspace} change the
+achievable accuracy and energy, and where a plain CMOS Hamming
+array is already enough.
+
+\begin{table}[t]
+\centering
+\caption{The \cam design space a monitoring workload has to choose from.
+Cell transistor counts are order-of-magnitude figures for CMOS
+implementations; NVM-based cells trade area for nonvolatility.}
+\label{tab:camspace}
+{\footnotesize
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Cell} & \textbf{Holds} & \textbf{Distance} & \textbf{Cost / maturity} \\
+\midrule
+BCAM  & one bit            & Hamming            & $\sim$6--10T, any CMOS fab \\
+\tcam & bit or don't-care  & Hamming, wildcards & $\sim$16T CMOS; 2T \fefet \\
+\mcam & one of $2^b$ levels & Euclidean ($L_2^2$) & multi-level device \\
+\acam & a range            & range / interval   & multi-level device \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Match mode is an independent choice:} exact,
+best-match, or threshold.} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{\cam technologies}
+\label{subsec:CAMtech}
+\dt[MN: placeholder per your restructuring note -- your
+technology-based \cam content goes here (SRAM vs.\ FeFET vs.\ RRAM
+implementations, the SUPREME/JUMP material, whatever you want to
+carry). The BEOL paragraph below is the seed; Table~\ref{tab:devices}
+in Sec.~VII carries the device figures and could move up here if this
+subsection grows]{}
+The rungs of Table~\ref{tab:camspace} differ in where the array can
+physically sit. SRAM-based binary and ternary cells are buildable in
+any CMOS process today, in the front-end silicon alongside logic. The
+\fefet-based cells trade that ubiquity for density and nonvolatility,
+and their device work is moving toward the back end of line (BEOL):
+monolithic-3D integration of high-endurance multi-bit \fefets has been
+demonstrated with the memory tier above the logic
+tier~\cite{dutta2020m3dfefet}, and BEOL-compatible ferroelectric
+transistors with AlScN films on two-dimensional channels have been
+reported at thermal budgets a metal stack tolerates~\cite{kim2023alscn}.
+BEOL RRAM and MRAM are already offered at 22/16\,nm foundry nodes. A
+BEOL-capable cell is what would eventually let the signature bank sit
+in the metal layers above the compute that produces the activations;
+Sec.~\ref{subsec:Placement} returns to what that placement would mean
+for this workload. Notably, none of said substrates would be built
+for one application: an SRAM-based associative processing unit
+already performs bit-serial Hamming search at billion-vector
+scale commercially~\cite{gsi2025apu}, and \cam-based accelerators
+have been proposed across retrieval, one-shot learning, and
+range-matching workloads -- so a monitoring part rides on a
+primitive several markets already use
+(Sec.~\ref{subsec:RelatedWork}).\inote[aiviolet]{Sep 1, your (C):
+a brief echo of the associative-search-silicon paragraph, worked
+in here at the end of II-B; the full paragraph stays in II-C}
+\dt[confirm the kim2023alscn author list before submission (Nature
+Nanotechnology 2023, AlScN/2D-channel BEOL FeFETs)]{}
+
+\subsection{Preliminaries and related work}
+\label{subsec:Probes}
+\label{subsec:RelatedWork}
+\textbf{What a probe reads, and what it costs:} A token is carried
+through a transformer by a running vector, the \emph{residual stream},
+that every layer reads from and adds back to. After layer $\ell$,
+the result is $h^{(\ell)}$: $d$ numbers ($d=8{,}192$ for a 70B
+model), one vector per layer, per token. The individual entries are
+not labeled features -- no single coordinate means ``deception'' --
+so a detector has to read the vector as a whole rather than watch any
+one entry. A \emph{linear probe} is the simplest detector over
+that object: one stored vector $w$, fitted offline on labeled
+activations, and a threshold $\theta$, with
+%
+\begin{equation}
+w \cdot h \;=\; \sum_{i=1}^{d} w_i h_i \;>\; \theta
+\;\;\Longrightarrow\;\; \text{flag.}
+\label{eq:probe}
+\end{equation}
+%
+Probes of this form recover truth-related structure across several
+datasets and model families~\cite{marks2023geometry,burns2023ccs,
+zou2023repe}, and the directions are also actionable: adding a multiple
+of one back into the residual stream changes behavior, which is usually
+called steering~\cite{zou2023repe}. Scoring one activation is $2Ld$ multiply--accumulate
+operations for a model of depth $L$ and residual width $d$ -- about
+1.3 million operations for a 70B model, or roughly $10^{-5}$ of the
+forward pass. This cost is analogous to $L\!\cdot\!d$ rather than
+parameter count, and $L\!\cdot\!d$ has not changed significantly
+even with frontier models (e.g., a 671B-parameter mixture-of-experts
+model has $d=7{,}168$ and $L=61$~\cite{deepseekv3} -- an
+$L\!\cdot\!d$ \emph{smaller} than a dense 70B model's
+$8{,}192\times80$ -- so a bigger model could have a smaller probe
+vector).\inote[aiviolet]{two of your blue phrases were hard to read:
+I typed ``is analogous to'' and ``changed significantly even with
+frontier models''; if the second was ``now with,'' say so}
+
+\textbf{How detection is graded:} Quality is typically reported as area
+under
+the receiver operating characteristic curve (\auroc), i.e., the
+fraction of (deceptive, honest) pairs the detector orders correctly;
+1.0 is perfect and 0.5 is random. An important ``stress test''
+for library size is \emph{cross-domain} -- i.e., fit on one kind of
+dishonesty and evaluate on another~\cite{ying2026spectrum}.\footnote{A
+\emph{domain} is a subject matter to be dishonest about (what a word
+means, a checkable fact, a deduction); a \emph{behavior} is a kind of
+dishonesty (lying about a fact, flattering the user, quietly
+underperforming on an evaluation).}
+
+\textbf{Activation monitoring in production:} The two-stage cascade
+in~\cite{ccpp2026,anthropic2026ccblog} and the deployed Gemini
+probes~\cite{gemini2026probes} are the closest published statements of
+the workload this paper aims to accelerate; both operate at $K$ of
+order one.
+Monitoring has gotten cheaper as providers moved from reading text to
+reading activations: the first-generation text-classifier pair
+reported 23.7\% overhead, while the probe-fronted cascade that
+replaced it reports 1--3.5\%~\cite{cc2025,ccpp2026}. Separately
+reported monitor overheads of roughly 0.1\% of serving
+cost~\cite{anthropic2025cheapmonitors} are consistent with watching
+just one or two things. What the published figures do not tell us is
+how the 1--3.5\% splits between the probe and the escalation stages;
+the $2Ld$ arithmetic above bounds the probe's share from below, at
+roughly $10^{-5}$ of forward-pass compute.
+\dt[still to verify: that the 1--3.5\% in ccpp2026 is measured over
+the full cascade rather than the probe alone]{}
+
+\inote[aiviolet]{Sep 2: the ``Interpretability work that sets $K$''
+paragraph is deleted per your full blue strike; all of its citations
+still appear in Sec.~I and the red-team appendix}
+
+\textbf{Approximate nearest-neighbor (ANN) search:}
+Locality-sensitive
+hashing~\cite{indyk1998lsh,charikar2002simhash} and graph
+indexes~\cite{malkov2020hnsw} visit a small fraction of a bank and
+still retrieve most true neighbors at sub-millisecond query
+times~\cite{faisscuvs2025}. Said methods are likely undesirable
+here, as a monitor cannot afford to miss -- an adversary can aim at
+the approximation error, while an exhaustive scan has none to
+exploit (red-team appendix, App.~A of the companion
+document).\inote[aiviolet]{Sep 1: trimmed
+per your note B -- ANN acknowledged in two sentences, with the
+cannot-afford-to-miss reason; the full version and the queued
+adversarial-recall measurement stay in red-team objection (2)}
+
+\textbf{Associative-search silicon:} Commercially, the nearest analog is
+an SRAM-based associative processing unit performing bit-serial Hamming
+search at billion-vector scale~\cite{gsi2025apu}. It is an existence
+proof for the primitive and the baseline a multi-bit or NVM-based part
+would have to differentiate against on density, energy, and metric.
+\cam-based accelerators have also been proposed for one-shot
+learning~\cite{ni2019fetcam}, nearest-neighbor
+search~\cite{kazemi2021fefetcam}, and analog range
+matching~\cite{li2020acam}. As such, the hardware requirements of
+this workload are not ``new'': the contribution here is the workload
+mapping and the library-size analysis rather than a new cell.
+\eo[if we keep this paragraph, is there a group SUPREME/JUMP CAM
+application-survey citation you want here instead of listing three
+individual papers? The deck used the survey figure]{}

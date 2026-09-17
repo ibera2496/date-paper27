@@ -1,0 +1,261 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Mapping the Detector into a CAM}
+\label{sec:Mapping}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Restructured Sep 1 per MN's comment (D): the "What CAM-resident
+% requires" block now LEADS the section (one move, per MN), and the
+% encodings are presented as options for satisfying those
+% requirements. Order: intro (reframed per MN: technology-enabled
+% first, CMOS as the nearer-term study) -> requirements -> first
+% mapping -> path back -> encodings 1-3 -> decision rule.
+% Aug 31 structure otherwise unchanged: mappings only here, all
+% evaluation in Sec. V.
+
+This section covers ways to map activation signatures onto \cam
+arrays. Candidate arrays span emerging devices through nearer-term
+CMOS solutions that leverage different encoding schemes -- notably,
+traditional \cam designs can also be realized with nonvolatile
+memories (RRAM, MRAM, etc.), which could approach the density gains
+and, with a mostly static signature bank, benefit from
+nonvolatility. Sec.~\ref{subsec:Requirements} first spells out what
+any \cam-resident realization requires. The first mapping
+(Sec.~\ref{subsec:FirstPipeline}) assumed the best-case device -- a
+multi-bit, \fefet-class cell whose matchline computes the Euclidean
+distance the full-precision detector actually uses -- and it is
+retained as the reference point the other encodings are measured
+against. The encodings of
+Secs.~\ref{subsec:SignRP}--\ref{subsec:TwoStage} satisfy the
+requirements on hardware buildable today, including Hamming-distance
+options that are near-term and realizable by a host of NVMs as well
+as by plain CMOS.
+\inote[aiviolet]{Sep 2, your (B): opener rewritten generically
+(``ways to map activation signatures to CAM arrays''), your
+right-margin NVM wording worked in, reference-point sentiment kept.
+The old ``two constraints'' sentence (deployment target + audit) is
+cut here since IV-A's closing paragraph already carries the audit
+point -- say the word if you want it restored}
+
+\subsection{What ``CAM-resident'' requires}
+\label{subsec:Requirements}
+For the monitor to be one memory structure rather than a memory plus an
+accelerator, three properties have to hold. {\bf (1)} The query has to
+be producible from the raw activation by something cheap, since whatever
+sits in front of the array runs on every token. {\bf (2)} The comparison
+the array performs natively has to be the comparison the detector needs,
+which for a binary or ternary cell means the decision has to be
+expressible as a Hamming distance. {\bf (3)} The decision rule has to
+consume what a matchline can report -- a winner, a set of rows under a
+threshold, or a count -- rather than a full sorted score
+vector.\footnote{Returning all $K$ scores is a readout job a \cam is
+not for.}
+
+Property~(1) also has a methodological consequence. If the front end is
+trained, it can learn to do the classification itself, leaving the
+memory as decoration. Sec.~\ref{subsec:Audit} describes the test we
+use to detect that, and what it caught when we ran it on pipelines
+that did have trained front ends.
+
+\subsection{The first mapping: learned projection, 3-bit Euclidean}
+\label{subsec:FirstPipeline}
+A multi-bit, \fefet-class cell broadens what a stored row can be:
+each cell holds a level rather than a bit, which could allow for a
+richer representation of the data -- or the same representation in
+fewer memory cells -- with the matchline computing the Euclidean
+distance the detector actually uses (Sec.~\ref{subsec:CAMspace}). A
+down-projection mechanism does need to be implemented regardless,
+since whatever sits in front of the array runs on every token
+(requirement~{\bf (1)}): each raw activation is reduced from $d$
+dimensions to a much smaller $d'$ and quantized to a few bits per
+dimension.\inote[aiviolet]{Sep 2: opening reframed per your margin
+note -- leads with what \fefet \cam{}s can do (richer representation
+or fewer cells), with the down-projection-regardless point kept}
+Concretely, the pipeline took the residual-stream
+activation at layer 33 (the tuned layer choice described in
+Sec.~\ref{subsec:Setup}), built a bank of mutually distinct deception
+directions by iterative nullspace
+projection~\cite{ravfogel2020inlp} (train a probe, project its direction
+out, retrain), weighted each stored direction with one trained scalar,
+compressed the activation with a \emph{learned} down-projection from
+$d=8{,}192$ to $d'=128$ dimensions, and quantized query and stored rows
+alike to 3 bits with learned-step quantization~\cite{esser2020lsq}, so
+that the low-precision rounding sits inside the training loop rather
+than being applied afterwards.\footnote{Quantization-aware training at
+this precision is standard practice: a shipping on-device foundation
+model is trained with 2-bit QAT~\cite{apple2025foundation}.} Matching
+was Euclidean winner-take-all, returning the winning row and its
+margin. $d'=128$ was chosen to match the row geometry of a multi-bit
+\fefet array -- 128 cells sharing a matchline, at 3 bits per cell --
+so the stored row is a 384-bit-\emph{equivalent} row (physically, 128
+cells), which is where the matched 384-bit operating point used
+throughout Sec.~\ref{sec:Results} comes
+from.\inote[aiviolet]{Sep 1, three of your notes on this passage:
+(1) it now gives the strategy first ($d \to d'$, then quantize) and
+the numbers after; (2) ``384-bit row'' is now ``384-bit-equivalent
+row,'' per your ``there are just 128 cells''; (3) the why-128
+sentence ties $d'$ to \fefet row geometry per your margin note --
+the 128-cells-per-matchline reading is mine, so fix the parenthetical
+if the real constraint is different. Layer 33's proper introduction
+moved to the tutorial setup of Sec.~V-A; this passage now just points
+there}
+
+This mapping's results -- and the audit finding that retired its
+trained cousins -- are evaluated in Sec.~\ref{sec:Results}
+(Fig.~\ref{fig:grids}(b) and
+Table~\ref{tab:audit}).\inote[aiviolet]{Sep 1: the rest of this
+paragraph (``...the encodings in the rest of this section descend
+from the variants whose stored rows carry the classification'') is
+cut per your ``can probably cut/scale this''}
+
+\label{subsec:PathBack}%
+The encodings that follow trade this mapping's multi-bit cell for
+Hamming-distance solutions, which are near-term and realizable by a
+host of NVMs as well as by plain CMOS; a frozen projection matched on
+a multi-bit Euclidean matchline remains the natural recombination to
+try as the device matures.
+\inote[aiviolet]{Sep 2: the old Sec.~IV-C (``The path back to a
+multi-bit cell'') is cut to this transition sentence per your notes
+-- the ``abandonment'' framing you flagged as making no sense is
+gone with it, and the Hamming/NVM near-term point you asked for is
+in. The full old text is preserved as a comment in the source; the
+recombination-experiment question stays in the review appendix, and
+Sec.~V's audit subsection still points here}
+% --- Old Sec. IV-C, cut Sep 2 per MN (kept for possible restore) ---
+% Moving to frozen projections and a Hamming metric is not an
+% abandonment of the Euclidean track, and the two can be recombined.
+% The property that made the first pipeline suspect was the learned
+% front end, not the multi-bit cell; the property that makes the new
+% encodings trustworthy is the frozen projection, not the Hamming
+% metric. A frozen random projection quantized to 3 bits and matched
+% on a multi-bit Euclidean matchline would have both: nothing trained
+% ahead of the array, and a metric that keeps magnitude rather than
+% only the sign of each coordinate. It is worth trying because sign
+% codes discard exactly the information the close calls depend on,
+% and because if magnitude carries signal, a few hundred 3-bit values
+% may replace 2,048 sign bits, i.e., a smaller bank for the same
+% separation. / Two reasons it might not work are worth stating in
+% advance. A learned projection can be trained through the quantizer,
+% whereas a frozen one cannot, so the 3-bit levels have to be placed
+% after the fact and the frozen projection may not survive
+% quantization as gracefully. And it gives up the argument that the
+% whole detector fits in a plain CMOS array today.
+% -----------------------------------------------------------------
+
+\subsection{Encoding 1: sign random projection, ternary (or via other
+NVMs)}
+\label{subsec:SignRP}
+A first option for meeting requirements {\bf (1)}--{\bf (3)} on
+hardware buildable today is a fixed random projection: draw
+$P \in \mathbb{R}^{m \times d}$ once and freeze it, then encode an
+activation as the sign pattern of its projection,
+%
+\begin{equation}
+c_j(h) \;=\; \operatorname{sign}\!\big( (Ph)_j \big), \qquad j = 1 \ldots m,
+\label{eq:signrp}
+\end{equation}
+%
+with a dead zone $|(Ph)_j| < \epsilon$ mapped to don't-care, which makes
+the code ternary and requires a wildcard-capable cell. This is the
+standard sign-random-projection (SimHash)
+construction~\cite{charikar2002simhash}; the Hamming distance between
+two codes estimates the angle between the underlying
+vectors.\inote[aiviolet]{Sep 2, per your marks: opener simplified
+(``too AI-like''), the hyperplane explanation shortened per ``CAM
+simplify,'' and the ``contribution here is not the construction''
+sentence deleted per your strike}
+
+From a hardware perspective, the comparison is an XOR plus a
+population count, which a plain
+\cam array computes natively. A code wider than a practical array row
+is split across subarrays and the results aggregated, which is
+standard practice and a real design parameter -- the measured
+\fefet \cam demonstration of~\cite{kazemi2022hdcfefet} uses exactly
+this organization, with voting to aggregate results between
+subarrays.
+
+\subsection{Encoding 2: thermometer coding (plain binary CMOS)}
+\label{subsec:Thermometer}
+A second option for reaching a \cam realization -- and one a plain
+CMOS binary array can serve: quantize each projected dimension into
+$\ell$ levels and encode each
+level in unary, so a value of level $v$ becomes $v$ ones followed by
+$\ell-v$ zeros. For two codes $u,v$ over the same dimension,
+%
+\begin{equation}
+d_{\mathrm{Ham}}\big(\mathrm{therm}(u), \mathrm{therm}(v)\big)
+\;=\; \sum_i \big| u_i - v_i \big|,
+\label{eq:thermo}
+\end{equation}
+%
+i.e., Hamming distance on the code is exactly the $L_1$ distance on the
+quantized values. The identity is exact, not approximate, which is what
+makes the encoding useful here: a cell that can only report disagreement
+now supports a magnitude-sensitive metric. No wildcard is needed, so
+the cell is a plain binary \cam at roughly 6--10 transistors rather than
+a \tcam at roughly 16.
+
+The cell menu is wider than CMOS. A 1\fefet-1C array -- a DRAM-like
+cell with the \fefet as access transistor -- has been extended to
+ternary \cam operation, with a fabricated proof of concept whose
+sensed matchline voltage after charge sharing is linear in Hamming
+distance~\cite{fefet1c2026}. A plausible extension is to host either
+of this section's encodings on such arrays: the Hamming linearity
+reads off the distances of Eqs.~(\ref{eq:signrp})
+and~(\ref{eq:thermo}) directly, the don't-care support serves the
+ternary code's dead zone, and the DRAM-like cell promises density --
+especially considering rising 3D DRAM -- with nonvolatile storage
+suited to a mostly static signature bank.\inote[aiviolet]{Sep 2,
+your two-arrow note at the identity claim: the 1FeFET-1C material is
+in, from the TED draft you attached (cited as ``manuscript in
+preparation'' -- fix the entry when the author list settles). The
+DAC-thermosensitive.pdf citation and its extension still need the
+file from work}
+\dt[DAC-thermosensitive.pdf: cite here with its plausible extension
+once the PDF arrives from MN's work machine; also settle the
+fefet1c2026 bib entry's authors before submission]{}
+
+The comparison against \signrp is therefore not symmetric. At a matched
+code length the two encodings use the same number of \emph{bits} but not
+the same amount of \emph{silicon}, and Sec.~\ref{sec:Results} reports
+both alongside that qualification.
+
+\subsection{The decision rule}
+
+\label{subsec:Decision}
+\dt[flagged per your margin note: have Indranil walk us through what
+the runs actually store and compare -- the text below claims a few
+thousand labeled exemplars per domain with a k=31 majority vote; if
+that is not what the runs do, this subsection, the audit discussion,
+and Table~II's bank sizes all change. (The round-2 log transcribed
+your note as ``clarify with Ismail'' -- MN does not know an Ismail,
+so that read was wrong; item 7 of Indranil's hand-off note carries
+this question.) No prose changed pending the answer]{}
+The stored rows are labeled example activations rather than fitted
+directions -- i.e., each domain stores not one direction per class
+but a few thousand encoded activations, each labeled honest or
+deceptive. A query is classified by the majority label among
+its $k$ nearest stored rows under the array's metric, with $k=31$ in the
+runs reported here (odd, so the vote cannot tie; the gain flattens well
+before 31). The scheme is analogous to few-shot classification:
+rather than one fitted direction per behavior (the $N$-way, 1-shot
+analog), the bank operates $N$-way, many-shot, with thousands of
+stored exemplars per domain and the array's distance metric supplying
+the comparison. A vote over neighbors rather than a single winner is
+worth 3--5 accuracy points in in-distribution tests, and it consumes
+only what a best-match or threshold matchline can report.
+
+\subsection{Encoding 3, as a ceiling: shortlist plus exact rerank}
+\label{subsec:TwoStage}
+To bound what the compression costs rather than only measuring it, we
+also run a two-stage variant: stage 1 is a thermometer-Hamming search of
+the whole bank that keeps the top $k$ rows as a shortlist, and stage 2
+is an exact cosine rerank on the raw, uncompressed activations
+restricted to that shortlist. With $k$ equal to the whole bank, stage 2
+alone defines a full-precision ceiling for the same data and protocol.
+Shortlist-then-rerank is standard practice in large-scale retrieval
+(e.g., the two-stage GPU indexes of~\cite{faisscuvs2025});
+equivalently, stage 2 can be read as checking a smaller $K$ that a
+GPU can easily and accurately serve, with stage 1 reducing the
+library to that size. The variant is also the architecture a real
+system might adopt if
+single-stage fidelity is inadequate, at the cost of a second memory
+structure and a floating-point stage.

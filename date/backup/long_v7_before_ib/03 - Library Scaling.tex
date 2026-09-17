@@ -1,0 +1,108 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{A Cost Model with One Variable}
+\label{sec:Scaling}
+\label{subsec:CostModel}
+\label{subsec:Ladder}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Collapsed to a very short section in the Aug 28 (second) markup pass,
+% per MN: III-A cut (the ladder and its arithmetic live in Sec. I and
+% Fig. 1), Table III (tab:ladder) cut as redundant, III-C folded into
+% the intro (122 runs / seven models now in the intro's security
+% paragraph) with the session-length point kept here, where the
+% per-token price is the argument. The old subsec labels are kept as
+% aliases so external \refs still resolve.
+
+\inote[aiviolet]{Aug 28 pm, per your second markup pass: Sec.~III is
+now just the cost model, per your pick. Cut: the old III-A (redundant
+with the intro ladder and Fig.~1), the ``dashed lines'' paragraph, and
+Table~III (your ``seems redundant''). Folded into the intro: 122 runs
+across seven models. Kept here: the equations, crossings, anchors,
+the per-token/compounding argument, and the session-length point}
+
+Let $K$ be the number of stored signatures per monitored layer, $d$ the
+residual width, $L_{\mathrm{mon}}$ the number of monitored layers, $R$
+the token rate, and $b$ the bytes per stored element. On a GPU the bank
+is read once per monitored token, so
+%
+\begin{equation}
+T_{\mathrm{GPU}} \;=\; K \, d \, b \, L_{\mathrm{mon}} \, R
+\quad\text{bytes/s,}
+\label{eq:gputraffic}
+\end{equation}
+%
+while a \cam broadcasts the query and leaves the bank in place, so
+%
+\begin{equation}
+T_{\mathrm{CAM}} \;=\; d \, b \, L_{\mathrm{mon}} \, R
+\quad\text{bytes/s,}
+\label{eq:camtraffic}
+\end{equation}
+%
+independent of $K$. The right-hand axis of Fig.~\ref{fig:ladder}(a)
+reads Eq.~(\ref{eq:gputraffic}) at $d=8{,}192$, fp16, one monitored
+layer and $R=1{,}000$~tokens/s, against vendor HBM and LPDDR
+bandwidths. Monitoring traffic reaches an H100's entire
+\qty{3.35}{\tera\byte\per\second}~\cite{nvidia_h100} at
+$K\!\approx\!204$K and an A100's at $K\!\approx\!122$K; on a
+Jetson-class part at \qty{273}{\giga\byte\per\second} the same
+crossing arrives at $K\!\approx\!17$K, roughly an order of magnitude
+earlier. Those crossings move with the token rate, which is a
+deployment parameter rather than a property of the monitor, so
+Fig.~\ref{fig:ladder}(b) plots the limiting $K$ across token rates
+spanning batch-1 edge decoding and a loaded datacenter node.
+
+The anchor strip under Fig.~\ref{fig:ladder}(b) places familiar
+workloads on that axis. At the per-stream end, a single voice or chat
+user decodes at tens of tokens/s, and a deep-reasoning or agentic
+stream at a similar instantaneous rate -- what distinguishes those
+tasks is duration, at $10^{3}$--$10^{5}$ generated tokens per query
+and up to $10^{8}$ tokens per agent run~\cite{aisi2026cyber}.
+Per-stream rates batch up: published serving benchmarks for 70B-class
+models report aggregate throughputs of order $10^{3}$ tokens/s per
+datacenter GPU at high batch~\cite{lyceum2026tps}. At the edge the
+two coincide, since a robot-control (vision--language--action, VLA)
+policy runs at batch~1 and its stream rate \emph{is} the part's
+aggregate rate: an autoregressive VLA at 3--6~Hz and $\sim$7 action
+tokens per step is tens of tokens/s, while a chunked $\pi_0$-class
+policy at the 19~Hz reported on a Jetson Thor emits 50-action chunks,
+i.e., of order $10^{3}$ action tokens/s~\cite{vlaperf2026}, and
+continuous video understanding pushes a backbone toward
+$10^{3}$--$10^{4}$ token positions/s. As such, the 10--$10^{4}$
+tokens/s span of Fig.~\ref{fig:ladder}(b) covers deployed practice
+rather than a hypothetical, and the workloads that reach the earliest
+crossings -- batch-1 VLA and video on edge parts -- also have no
+batch to amortize against.
+\dt[anchor numbers to verify before submission: the VLA rows are
+converted from VLA-Perf's Hz figures (solid); voice, agentic-session,
+and video-backbone rates are order-of-magnitude from usage norms and
+frame-rate arithmetic, not from a single citable benchmark. The
+serving-node figure still cites a gray-literature roundup -- swap in
+the interconnect number if you have one]{}
+
+Two properties of Eq.~(\ref{eq:gputraffic}) justify the work in this
+paper. {\bf (1)} Latency is the wrong way to judge a monitor's cost.
+At small $K$ the monitor's reads hide under inference latency, so it
+\emph{looks} free -- but the bytes and the energy still must move.
+Rather, it is better to consider traffic and energy, and
+both are charged \emph{per token}. {\bf (2)} A per-token price
+multiplies a token base that is compounding: inference volume has
+been growing several-fold per year, so a fixed percentage of it is
+not a fixed cost. Long-running agents reinforce this
+point.\inote[aiviolet]{your ``maybe'' replacement applied; veto and
+it reverts to ``make the same point concrete''}
+The campaign runs of Sec.~\ref{sec:Introduction} walk 32 steps over
+roughly 20 hours at run budgets up to $10^{8}$
+tokens~\cite{aisi2026cyber}; a monitor for such a run is always-on by
+construction, and its per-token price is what decides whether it
+stays on.\inote[aiviolet]{Sep 1: footnote 4 (``no detector of ours
+has been run on cyber behavior'') deleted per your note, and the
+compact-shared-basis pointer sentence is cut -- that evidence and
+the responses remain collected in red-team objection (1)}
+
+\inote[aiviolet]{Aug 31: the contour figure (old Fig.~2) is cut per
+your X through it; fig\_contour\_v1 stays in the figures folder if
+it is ever wanted back}
+
+\inote[aiviolet]{v03 note, still true: the full-width traffic-vs-$K$
+figure (fig\_kscaling\_v1) stays retired; its content is
+Fig.~\ref{fig:ladder}}

@@ -169,7 +169,7 @@ finish(fig, "fig_capacity_v1")
 # ====================================================================
 # Fig. 4 -- cross-domain AUROC grids
 # ====================================================================
-LBL = ["defn", "evid", "fict", "logic", "ethic", "syco", "repe", "role", "insid", "sandb"]
+LBL = ["defn", "empir", "fict", "logic", "ethic", "syco", "repe", "role", "insid", "sandb"]  # evid -> empir per IB, Sep 17 (item 3)
 HERE = os.path.dirname(os.path.abspath(__file__))
 G = {n: np.load(os.path.join(HERE, f"{n}.npy"))
      for n in ("ternary384", "thermo384", "twostage_fp")}
@@ -209,7 +209,7 @@ finish(fig, "fig_grids_v1")
 # ====================================================================
 # Fig. 5 -- the shortlist limitation
 # ====================================================================
-cov_lbl = ["defn", "evid", "fict", "logic", "ethic", "syco", "repe", "role", "insid", "sandb"]
+cov_lbl = ["defn", "empir", "fict", "logic", "ethic", "syco", "repe", "role", "insid", "sandb"]
 cov_syco = [7.3, 8.6, 3.6, 34.5, 13.8, 100.0, 2.7, 8.1, 0.3, 3.6]
 cov_defn = [100.0, 98.9, 98.3, 97.1, 95.2, 72.1, 99.5, 82.6, 14.0, 67.4]
 floor_syco, floor_defn = 400 / 3201 * 100, 400 / 831 * 100

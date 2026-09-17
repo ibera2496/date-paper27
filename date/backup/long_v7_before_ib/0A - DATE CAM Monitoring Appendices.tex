@@ -1,0 +1,80 @@
+% ============================================================
+%  0A - DATE CAM Monitoring Appendices.tex -- appendix driver (v7)
+%
+%  New in v7 (2026-09-02), per MN: the appendices (red team,
+%  bandwidth tax) are split out of the main paper into this companion
+%  document. Cross-references between the two documents are
+%  hardcoded ("Fig. 1 of the main paper", "Sec. VII-F") -- if the
+%  main paper's numbering shifts, update them by grepping this tree
+%  for "of the main paper" / "main paper, Sec".
+%  Compile: bash compile.sh (builds main + appendices, both modes).
+% ============================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{RobStd}
+\usepackage{subcaption}
+\usepackage{siunitx}
+% --- siunitx v2/v3 compatibility shim ------------------------
+\ifdefined\qty\else
+  \NewDocumentCommand{\qty}{O{}mm}{\SI[#1]{#2}{#3}}
+\fi
+\ifdefined\unit\else
+  \NewDocumentCommand{\unit}{O{}m}{\si[#1]{#2}}
+\fi
+% -------------------------------------------------------------
+\usepackage{placeins}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{url}
+\renewcommand\arraystretch{1.15}
+\setlength{\tabcolsep}{4pt}
+\graphicspath{{figures/}}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% --- shorthand macros ----------------------------------------
+\newcommand{\cam}{{CAM}\xspace}
+\newcommand{\tcam}{{TCAM}\xspace}
+\newcommand{\mcam}{{MCAM}\xspace}
+\newcommand{\acam}{{ACAM}\xspace}
+\newcommand{\imc}{{CiM}\xspace}
+\newcommand{\fefet}{{FeFET}\xspace}
+\newcommand{\fefets}{{FeFETs}\xspace}
+\newcommand{\auroc}{{AUROC}\xspace}
+\newcommand{\signrp}{{sign-RP}\xspace}
+\newcommand{\tocite}[1]{[{\color{red}citation-#1}]}
+
+\input{comments}
+% \setboolean{showcomments}{true}   % or run: bash compile.sh
+
+\renewcommand{\thesection}{\Alph{section}}
+
+\begin{document}
+
+\bstctlcite{IEEEexample:BSTcontrol}
+
+\title{\cam-Resident Behavioral Monitoring for LLMs:\\
+Companion Appendices}
+
+\author{\IEEEauthorblockN{Anonymized for review}
+\IEEEauthorblockA{DATE 2027 submission -- companion to the main
+paper; sections here are cited from the main text as the red-team
+appendix (App.~A) and the bandwidth-tax appendix (App.~B)}}
+
+\maketitle
+
+\input{09 - Red Team}
+\input{10 - Candidate Experiments}
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}

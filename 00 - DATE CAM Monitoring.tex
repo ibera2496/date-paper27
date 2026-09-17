@@ -1,7 +1,17 @@
 % ============================================================
 %  00 - DATE CAM Monitoring.tex -- driver file
 %
-%  DATE 2027 submission draft, v7 (2026-09-02 pm).
+%  DATE 2027 submission draft, v8 (2026-09-17).
+%  v8: IB's hand-off results applied (Indranil - Focus Areas.tex,
+%  items 1-8), each marked in the section files with \ib{...} per
+%  MN's note: matched cell count (05, Table II, 07, 08), pooled bank
+%  (05, 09), domain renames + Fig. 2(d)-(f) labels (05,
+%  gen_paper_figs.py), dead zone confirmed (05 note), audit at 384 b
+%  (05), four-domain provenance note (05), decision rule reworded
+%  (04), recombination result (04, 05, 07, 08), H100 baselines (07,
+%  Table VI, 08). Three orange flags resolved. The short DATE version
+%  lives in date/main.tex (see date/cut_plan.md).
+%  Previous: v7 (2026-09-02 pm).
 %  v7: per MN, the appendices are split into a companion document
 %  ("0A - DATE CAM Monitoring Appendices.tex" -> two more PDFs).
 %  This driver now builds the MAIN PAPER ONLY (Secs. I-VIII).
@@ -257,6 +267,29 @@ ferroelectric FETs; Hamming distance
 \clearpage
 \section*{\textcolor{aiviolet}{Review notes (not in the submission)}}
 \begin{pnote}[aiviolet]
+\textbf{IB's hand-off pass (Sep 17), from ``Indranil -- Focus Areas''
+(v07 $\to$ v08):} every change is marked in place with a green
+\textsf{IB} note. {\bf (1)} Matched cell count: thermometer at 768~b
+scores 0.924 / 0.631 against ternary-384's 0.920 / 0.640, ternary
+ahead in 54 of 90 cells -- the ``not been run'' caveat and its orange
+flag are replaced (Sec.~V-B, Table~II, Secs.~VII-D, VII-F, VIII).
+{\bf (2)} Pooled bank: 0.906 / 0.909 / 0.927 with sycophancy at 0.63
+(Sec.~V-B; objection~1 of the appendix). {\bf (3)} Domains relabeled
+to the source paper's names in Sec.~V and in Fig.~2(d)--(f); panels
+(d)--(f) confirmed as the current runs. {\bf (4)} Dead zone confirmed
+on; the orange flag is replaced by an IB note carrying the one open
+detail (query threshold from the test batch). {\bf (5)} Audit: the
+0.50 / 83\% figures are now labeled 2{,}048-b, and the 384-b
+label-shuffle control is added, stated as a separate check. {\bf (6)}
+Four-domain numbers: an IB note records that they are the undergrads'
+pipeline, not his runs. {\bf (7)} Decision rule: the score is the
+fraction of deceptive rows among the 31 nearest, AUROC computed on it
+directly; flag removed (Sec.~IV-E). {\bf (8)} Recombination (frozen RP,
+3-bit, Euclidean vs.\ Hamming: 0.579 vs.\ 0.593 cross-domain) in
+Sec.~V-C, echoed in IV-B, VII-D, VII-F, VIII; H100 PCIe baselines in
+Sec.~VII-E and Table~VI, with a framing note for MN on the popcount
+result.
+
 \textbf{Round-2 markup pass (Sep 2), from the round-2 log on the v05
 print (v05 $\to$ v06):}
 {\bf (1)} \emph{Blue, verbatim:} the ``Interpretability work that

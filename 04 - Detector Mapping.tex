@@ -109,9 +109,11 @@ cut per your ``can probably cut/scale this''}
 \label{subsec:PathBack}%
 The encodings that follow trade this mapping's multi-bit cell for
 Hamming-distance solutions, which are near-term and realizable by a
-host of NVMs as well as by plain CMOS; a frozen projection matched on
-a multi-bit Euclidean matchline remains the natural recombination to
-try as the device matures.
+host of NVMs as well as by plain CMOS; the natural recombination -- a
+frozen projection matched on a multi-bit Euclidean matchline -- has
+now been run on the deception grid, and with the projection frozen the
+Euclidean matchline buys no accuracy over Hamming distance
+(Sec.~\ref{subsec:BitWidth}).\ib{Item 8(a) run; result in Sec.~V-C.}
 \inote[aiviolet]{Sep 2: the old Sec.~IV-C (``The path back to a
 multi-bit cell'') is cut to this transition sentence per your notes
 -- the ``abandonment'' framing you flagged as making no sense is
@@ -221,21 +223,23 @@ both alongside that qualification.
 \subsection{The decision rule}
 
 \label{subsec:Decision}
-\dt[flagged per your margin note: have Indranil walk us through what
-the runs actually store and compare -- the text below claims a few
-thousand labeled exemplars per domain with a k=31 majority vote; if
-that is not what the runs do, this subsection, the audit discussion,
-and Table~II's bank sizes all change. (The round-2 log transcribed
-your note as ``clarify with Ismail'' -- MN does not know an Ismail,
-so that read was wrong; item 7 of Indranil's hand-off note carries
-this question.) No prose changed pending the answer]{}
 The stored rows are labeled example activations rather than fitted
 directions -- i.e., each domain stores not one direction per class
 but a few thousand encoded activations, each labeled honest or
-deceptive. A query is classified by the majority label among
-its $k$ nearest stored rows under the array's metric, with $k=31$ in the
-runs reported here (odd, so the vote cannot tie; the gain flattens well
-before 31). The scheme is analogous to few-shot classification:
+deceptive. A query is scored by the fraction of its $k$ nearest stored
+rows, under the array's metric, that carry the deceptive label, with
+$k=31$ in the runs reported here (the gain flattens well before 31);
+\auroc is computed on that score directly, so no threshold is
+chosen.\ib{Item 7: this is what the runs do. Each domain's 70\% split
+goes through the frozen encoder (mean-center, random projection to 128
+dims, quantize to 4 levels, thermometer code) and is stored with its
+label -- 831 rows for definitional up to 3{,}201 for sycophancy. A test
+activation is encoded the same way, compared by Hamming distance
+against every stored row, and scored by the fraction of its 31 nearest
+rows labeled deceptive; AUROC is computed on that fraction, so there is
+no majority vote and no threshold. The bank description, the audit
+discussion, and Table II's row counts were already right; only
+``majority label'' was imprecise.} The scheme is analogous to few-shot classification:
 rather than one fitted direction per behavior (the $N$-way, 1-shot
 analog), the bank operates $N$-way, many-shot, with thousands of
 stored exemplars per domain and the array's distance metric supplying

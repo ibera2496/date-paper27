@@ -1,0 +1,585 @@
+% ============================================================
+%  00 - DATE CAM Monitoring.tex -- driver file
+%
+%  DATE 2027 submission draft, v7 (2026-09-02 pm).
+%  v7: per MN, the appendices are split into a companion document
+%  ("0A - DATE CAM Monitoring Appendices.tex" -> two more PDFs).
+%  This driver now builds the MAIN PAPER ONLY (Secs. I-VIII).
+%  Cross-references between the documents are hardcoded text
+%  ("companion document" here; "of the main paper" there).
+%  A hand-off note for Indranil ("Indranil - Focus Areas.tex") is
+%  also new in this tree. No content changes from v6 otherwise.
+%  Previous: v6 (2026-09-02).
+%  v6: round-2 hand-markup applied from
+%  DATE-CAM-monitoring_markup-log-round2.md. Sec. IV intro rewritten
+%  generically (mapping activation signatures to CAM arrays; NVM
+%  parenthetical per MN's margin wording); IV-B leads with FeFET-CAM
+%  capability; old IV-C cut to a transition (text in comment);
+%  Encoding 1 exposition simplified + "From a hardware perspective"
+%  verbatim; headings gain NVM/CMOS qualifiers; K-scores clause
+%  footnoted (MN: "footnote it"); Sec. II "Interpretability work that
+%  sets K" paragraph and Sec. V small-K paragraph deleted per strikes;
+%  Sec. V opener "We first evaluate ... a deception detection
+%  workload"; grid-reading sentence added (note E); in-domain
+%  paragraph in plain English. New refs: kazemi2022hdcfefet (measured
+%  FeFET CAM, Sec. II + subarray split), fefet1c2026 (1FeFET-1C TCAM
+%  PoC, thermometer section; authors TBD). Pending: the DAC
+%  thermometer paper (orange flag in 04); Ismail question on the
+%  decision rule; Fig. 2(a)-(c) keep/cut; Truthfulness-VLA framing.
+%  Previous: v5 (2026-09-01).
+%  v5: fourth hand-markup pass applied from the pass-2 markup log
+%  (DATE-CAM-monitoring_markup-log.md). Comment (D): Sec. IV now leads
+%  with "What CAM-resident requires," encodings framed as options;
+%  Sec. IV intro reframed (technology-enabled first, CMOS as the
+%  nearer-term study). Intro augmented with the OpenAI-Hugging Face
+%  incident (per IV.pdf; refs clark2026import, cotra2026hf). Sec. II
+%  gains the "what an emerging-technology CAM can or cannot buy"
+%  framing (MN's wording), echoed in IV's intro and V-C's takeaway.
+%  Cuts: shared-circuitry pointer sentences (II-C, III), ANN block
+%  trimmed to two sentences, footnote 4, Sec. IV-B experiment list,
+%  V-B recap paragraph. Layer-33 thread resolved: tutorial setup in
+%  V-A, forward pointer in IV-B, strategy-first rewrite + why-128 +
+%  "384-bit-equivalent." Blue edits verbatim; "must move" and "can or
+%  cannot buy" per MN's chat clarifications.
+%  Previous: v4 (2026-08-26).
+%  v4: per MN, the abstract is the intro's backbone -- abstract culled
+%  to ~0.5 column, intro rebuilt from it at ~1 column (STAR-A material
+%  folded in, J-space lead-in added, probe arithmetic and overhead
+%  detail moved to Sec. II-C); Sec. II restructured (CAM types first,
+%  technology placeholder for MN, then preliminaries + related work);
+%  Sec. III-D moved to a red-team appendix (09); tok/s reality check
+%  added to Sec. III-B; Sec. IV maturity-order lead-in + audit-caption
+%  "cheating" note.
+%  Previous: v3 (2026-08-25; abstract pass 08-26).
+%  v1 (08-17) converted from the IV team briefing deck v3; v2 (08-21)
+%  reframed K as growing and brought the J-space results in; v3 (08-25)
+%  per MN's markup on 00/01: title picked, the K ladder made explicit
+%  and bold (abstract, intro, Sec. III), Figs. 1 and 2 merged into one
+%  single-column intro figure (fig_ladder_v1), the overhead progression
+%  flipped and reconciled, and a first-order energy/latency estimate
+%  added to Sec. VII with the near-term measurement plan. 08-26:
+%  abstract reworked per MN's in-file edits and flags (see the review
+%  appendix).
+%
+%  Structure and formatting follow the 1FeFET-1C DATE draft in the
+%  sibling folder (IEEEtran conference class, numbered section files,
+%  comments.tex flag system, dual-mode compile.sh).
+%
+%  Compile: bash compile.sh   (produces With/No Comments PDFs)
+% ============================================================
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{RobStd}
+\usepackage{subcaption}
+\usepackage{siunitx}
+% --- siunitx v2/v3 compatibility shim ------------------------
+\ifdefined\qty\else
+  \NewDocumentCommand{\qty}{O{}mm}{\SI[#1]{#2}{#3}}
+\fi
+\ifdefined\unit\else
+  \NewDocumentCommand{\unit}{O{}m}{\si[#1]{#2}}
+\fi
+% -------------------------------------------------------------
+\usepackage{placeins}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{url}
+\renewcommand\arraystretch{1.15}
+\setlength{\tabcolsep}{4pt}
+\graphicspath{{figures/}}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% --- shorthand macros ----------------------------------------
+\newcommand{\cam}{{CAM}\xspace}
+\newcommand{\tcam}{{TCAM}\xspace}
+\newcommand{\mcam}{{MCAM}\xspace}
+\newcommand{\acam}{{ACAM}\xspace}
+\newcommand{\imc}{{CiM}\xspace}
+\newcommand{\fefet}{{FeFET}\xspace}
+\newcommand{\fefets}{{FeFETs}\xspace}
+\newcommand{\auroc}{{AUROC}\xspace}
+\newcommand{\signrp}{{sign-RP}\xspace}
+\newcommand{\tocite}[1]{[{\color{red}citation-#1}]}
+
+\input{comments}
+% \setboolean{showcomments}{true}   % or run: bash compile.sh
+
+\begin{document}
+
+% ============================================================
+%  ANNOTATION FLAGS -- quick reference
+%
+%  All flags compile away when showcomments is false (the default).
+%  The two action flags take the SAME shape, \flag[what to do]{content}.
+%  Content survives into BOTH builds; the bracketed note appears only in
+%  the With Comments build. With NO optional argument the braced text IS
+%  the note and disappears from the clean build entirely.
+%
+%  ORANGE -- an action to take
+%    \dt[note]{content}          (was \dothis / \dothisflag; still work)
+%    \dt{fill in the deadline}   note only, vanishes from the clean build
+%
+%  BLUE -- say more about this
+%    \eo[note]{content}          (was \expandon / \expandonflag; still work)
+%
+%  RED / VIOLET -- reviewer remarks, review build only
+%    \inote{short note}   \inote[aiviolet]{AI-generated suggestion}
+%    \begin{pnote} ... \end{pnote}     block note; escape _ as \_
+%    \reviewonly{...}                  content only in the review build
+%
+%  PER-AUTHOR inline notes: \mn{...} \ib{...} \sj{...} \xh{...}
+%
+%  A ']' typed inside a flag's optional argument silently truncates it
+%  and leaks the rest into the CLEAN build. Brace them: {[1]}, {[5]}.
+% ============================================================
+
+% ============================================================
+%  WRITING CONVENTIONS FOR THIS DRAFT (MN's voice; fix-ai-writing skill)
+%
+%  1.  Plain, first person plural, hedged. "may", "could", "appears to",
+%      "remains to be established". No absolutes that are not absolute.
+%  2.  En dashes (--), never em dashes (---).
+%  3.  Numbered inline lists: {\bf (1)} ... {\bf (2)} ..., not
+%      "First, ... Second, ...".
+%  4.  Bold run-in lead-ins end with a COLON, not a period, and the next
+%      word keeps its capital:  \textbf{What the grid measures:} Whether ...
+%  5.  Never the word "honest" as framing; never announce your own
+%      fairness ("to be fair", "stated fairly", "candidly").
+%  6.  No self-referential framing: "the whole argument", "the key
+%      insight", "which is the entire problem", "the upshot", "X turns
+%      on Y". State the substance and stop.
+%  7.  No verdict tags on your own description ("and it works").
+%  8.  Do not narrate design choices ("deliberately", "chosen to be").
+%  9.  A section discusses; it is not a proof. "Sec. IV covers ...",
+%      not "Sec. IV is the proof that ...".
+%  10. No "binds" / "bites" for constraints; no borrowed-metaphor verbs
+%      ("is the currency", "prices the choice", "lands on", "rests on").
+%      Use "maps to", "depends on", "the limit here is".
+%  11. American spelling, always. Define every acronym at first use.
+%  12. Scope caveats go in footnotes, not into the argumentative flow.
+%  13. Label invented or illustrative examples as such, in the text.
+%  14. Figures follow the house-graphs conventions: Helvetica, Set1
+%      colors, transparent background, provenance header in the
+%      generating script (see gen_paper_figs.py).
+% ============================================================
+
+\bstctlcite{IEEEexample:BSTcontrol}
+
+% DATE is double-blind: authors and funding are anonymized for
+% submission. Funding restored at camera-ready (SRC/DARPA JUMP 2.0;
+% NSF IRES; etc.).
+% Title per MN (08-25): option (2) from the v02 markup -- names the
+% design-space contribution first for a DATE audience.
+\title{\cam-Resident Behavioral Monitoring for LLMs: Encoding Choices,
+Cross-Domain Fidelity, and Library-Size Scaling}
+
+\author{\IEEEauthorblockN{Anonymized for review}
+\IEEEauthorblockA{DATE 2027 submission}}
+
+\maketitle
+
+\begin{abstract}
+Frontier language model deployments increasingly treat a model's own internal
+activations as a safety signal: a production jailbreak defense from
+Anthropic, for instance, is realized via a single linear probe over residual-stream
+activations, scored on every generated token at roughly
+$10^{-3}$~percent of forward-pass compute. What is monitored is set by
+$K$, the number of stored behavioral signatures each activation is
+compared against, and target $K$'s are rapidly increasing: from $K=1$
+in the deployed defense above, to $K\!\approx\!10^{2}$--$10^{3}$ once
+probes are fitted per behavior, per domain, and per layer, to
+$K\!\approx\!1.3\!\times\!10^{5}$ per layer for a whole-vocabulary
+readout, where the signature library equals the model's vocabulary. On a GPU,
+the signature bank must stream from high-bandwidth memory once per
+monitored token, so at sufficiently high $K$ or token rates -- e.g.,
+$K=10^{4}$--$10^{5}$ at $10^{3}$~tokens/s -- the monitor's own memory
+traffic can exceed the bandwidth of the accelerator it runs
+on.\inote[aiviolet]{broadened per your margin note to capture token
+rate alongside $K$; I dropped ``nominally'' as you suspected} We
+propose addressing this bottleneck with content-addressable memories
+(\cam{}s), which evaluate distance functions directly within the
+memory array -- emerging non-volatile devices further enable
+richer per-cell distance metrics (e.g., Euclidean).\inote[aiviolet]{Note: your earlier blue edit still doubles up
+(``in memory ... in the memory array itself''); if you meant to also
+strike ``in the memory array itself,'' say so and it is one deletion.
+The emerging-technology clause is new, per your ``briefly work in''
+note} Because the signature bank never moves and only the query is
+broadcast, this in-memory search trades arithmetic precision and distance function fidelity for orders of magnitude lower data movement. We quantify this trade-off on two
+representative workloads: {\bf (1)} a ten-domain cross-domain
+deception grid over Llama-3.3-70B activations, where 384-bit codes
+preserve in-domain \auroc within 0.01 of the full-precision cosine-similarity
+ceiling while achieving more than $300\times$ compression per stored signature; and
+{\bf (2)} whole-vocabulary readout, where a 3-bit Euclidean code at
+$\sim$$10^{3}$ storage bits per row reproduces 0.96 of the exact
+readout's top-1 token selections. Because search occurs in place
+rather than via streaming, the dominant costs shift to array capacity and search energy: the
+whole-vocabulary bank occupies 6--\qty{33}{\mega\byte} per layer, and estimated
+in-array search energy is five to six orders of
+magnitude below the energy of streaming the equivalent bank from
+HBM.\inote[aiviolet]{rewrote ``Held rather than moved'' per your
+``unsure what point of this is'' -- the point was that a bank that
+stays in place is priced by capacity and search energy, not
+bandwidth; it now says that}
+\end{abstract}
+
+\begin{IEEEkeywords}
+Content-addressable memory; compute-in-memory; large language models;
+activation probes; AI safety monitoring; nearest-neighbor search;
+ferroelectric FETs; Hamming distance
+\end{IEEEkeywords}
+
+\input{01 - Introduction}
+\input{02 - Background}
+\input{03 - Library Scaling}
+\input{04 - Detector Mapping}
+\input{05 - Results}
+\input{06 - Large K}
+\input{07 - Hardware Analysis}
+\input{08 - Conclusions}
+% v7: files 09 (red team) and 10 (bandwidth tax) moved to the
+% companion appendix document -- see "0A - DATE CAM Monitoring
+% Appendices.tex". In-text pointers now say "companion document."
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+% ---------- review-only appendix (With Comments build only) ----------
+\reviewonly{%
+\clearpage
+\section*{\textcolor{aiviolet}{Review notes (not in the submission)}}
+\begin{pnote}[aiviolet]
+\textbf{Round-2 markup pass (Sep 2), from the round-2 log on the v05
+print (v05 $\to$ v06):}
+{\bf (1)} \emph{Blue, verbatim:} the ``Interpretability work that
+sets $K$'' paragraph deleted (its cites survive in Sec.~I and the
+appendix); the Sec.~V small-$K$ paragraph deleted; ``From a hardware
+perspective,''; Sec.~V's opener carries your ``a''/``workload''
+inserts -- your strikes on ``This section''/``evaluates'' left no
+subject or verb, so it reads ``We first evaluate,'' from your ``We
+1st'' cue (flagged in place).
+{\bf (2)} \emph{Sec.~IV reframe, per your (B) thread:} intro
+rewritten generically around mapping activation signatures onto \cam
+arrays, spanning emerging devices to nearer-term CMOS, with your NVM
+parenthetical and the reference-point sentiment kept; IV-B leads
+with what \fefet \cam{}s could allow (richer representation or fewer
+cells; down-projection needed regardless); old IV-C cut to a
+transition per your call in chat, old text in a source comment;
+encoding headings updated (``or via other NVMs'' / plain binary
+CMOS).
+{\bf (3)} \emph{Simplification thread:} Encoding 1's opener
+de-AI'd, the hyperplane explanation shortened, the ``contribution
+here'' sentence deleted.
+{\bf (4)} \emph{Written:} the measured-\fefet-\cam mention by
+Table~I and the subarray-split citation, both from the Scientific
+Reports paper you attached (kazemi2022hdcfefet); the 1FeFET-1C
+ternary-\cam paragraph with plausible extensions in the thermometer
+section (fefet1c2026 -- authors TBD, flagged); the how-to-read-the-
+grids sentence (your (E), kept to one sentence per your note that
+the cross-domain paragraph covers part of it); the in-domain
+fidelity paragraph in plain English, numbers unchanged; property
+(3)'s $K$-scores clause is now a footnote per your call in chat.
+{\bf (5)} \emph{Left for people, not prose:} the decision-rule
+question carries an orange flag -- routed to Indranil (the round-2
+log's ``Ismail'' was a misread of MN's margin note); the
+Truthfulness$\leftrightarrow$VLA framing and the Fig.~2(a)--(c)
+keep/cut call are violet-flagged for conversation (my read on the
+middle path -- keep only (b) -- is in the note); the
+DAC-thermosensitive citation has an orange flag awaiting the PDF
+from your work machine.
+
+\textbf{Fourth hand-markup pass (Sep 1), from the pass-2 markup log
+and your chat clarifications (v04 $\to$ v05):}
+{\bf (1)} \emph{Blue, verbatim:} ``$K=1$ represents,'' ``are
+potentially valuable,'' ``also have no batch,'' ``still must move''
+(your ``a must'' = insert \emph{must}) $+$ ``Rather, it is better to
+consider,'' ``{\bf (2)} A per-token price,'' ``here, the
+$K\approx10^{2}$--$10^{3}$ regime''; your hedged ``reinforce this
+point'' is applied with a violet veto note.
+{\bf (2)} \emph{Comment (D), as the one move you suggested:} ``What
+`CAM-resident' requires'' now leads Sec.~IV after a reframed intro
+(technology-enabled first, CMOS as the nearer-term study, your
+``can or cannot buy'' framing); encodings 1--3 are presented as
+options against the requirements, thermometer flagged as the plain
+CMOS route, shortlist$+$rerank reframed as checking a smaller $K$ a
+GPU serves easily (with the retrieval citation). The confusing
+closing sentence (``the route back'') is rewritten and flagged.
+{\bf (3)} \emph{Written for you:} the abstract's emerging-technology
+clause; the OpenAI--Hugging Face augmentation in the intro (from
+IV.pdf; the pen's ``Anthropic'' read as OpenAI -- two new refs,
+Clark and Cotra) with a conservative-arithmetic clause on the
+$10^{3}$ rung; the II-B echo of the associative-search paragraph
+(your (C)); the decision rule now says multiple exemplars per class
+and carries your few-shot analogy; V-A is tutorial and introduces
+layer 33 properly (inherited from the source study's tuning), with
+IV-B pointing there; the pre-emptive ``why small $K$'' remark ends
+the Sec.~V intro.
+{\bf (4)} \emph{Cuts, content preserved:} shared-circuitry pointers
+(II-C, III) $\to$ red-team objection (1); ANN block $\to$ two
+sentences $+$ objection (2); footnote 4 deleted; IV's
+experiment list $\to$ one audit sentence in V-E; V-B recap cut.
+{\bf (5)} \emph{Your Fig.~2 question, answered in place:} their
+Fig.~2 trains on seven datasets and tests on ten (three on-policy
+benchmarks are test-only); our exemplar banks cover all ten, so our
+richer grid is expected -- violet note at the figure discussion, and
+the V-A naming flag now includes ethics/ethical. The combined-data
+check for panels (d)--(f) stays queued for I.~Bera.
+{\bf (6)} \emph{Flagged for your read, not blockers:} ``reinforce
+this point'' (veto note), the rewritten route-back sentence,
+``384-bit-equivalent'' $+$ the 128-cells-per-matchline reading, and
+the ``their limits'' reading in the small-$K$ remark.
+
+\textbf{Bandwidth-tax appendix and red-team addition (Aug 28 pm),
+per chat:} {\bf (1)} New appendix (file 10, Sec.~X): what a 10--20\%
+bandwidth tax does to inference on an H100 -- first-order 1:1
+pass-through in decode with the batch-1 and batch-32 arithmetic,
+the three second-order effects (queueing amplification to fleet
+size, L2/DRAM contention overshoot, proportional energy), and the
+five thief/MIG/end-to-end/SLO experiments, all days-scale. Parked as
+an appendix per your note; easy to move into Sec.~VII or cut.
+{\bf (2)} Red-team objection (1) now carries your saturation
+argument: the full-precision ceiling itself transfers poorly (0.705
+vs.\ 0.928), and wider codes make cross-domain transfer worse, so
+capacity is not the limiter -- consistent with behaviors wanting
+their own stored directions, i.e., with $K$ growing. Hedged to one
+model/one grid, with the shared-subspace counter-reading left
+standing.
+
+\textbf{Second hand-markup pass (Aug 28 pm): Sec.~II-C and the rest
+of Sec.~III:}
+{\bf (1)} \emph{Blue, verbatim:} ``$L\!\cdot\!d$ has not changed
+much''; ``An important `stress test' for library size is cross-domain
+-- i.e.,''; ``Two vocabulary items recur below'' deleted; ``that will
+be reproduced here.''
+{\bf (2)} \emph{Pink, written:} the in-line $L\!\cdot\!d$ example
+(671B MoE at $d{=}7{,}168\times61$ layers vs.\ dense 70B at
+$8{,}192\times80$), which also supplies the citation you asked for
+(DeepSeek-V3 technical report, added to refs.bib -- give it a look).
+{\bf (3)} \emph{Orange:} the shared-circuitry counter-argument
+sentence and the whole ANN block are now red in both builds, tracked
+for likely cutting; the ANN block also picks up ``i.e., a monitor
+that cannot afford to miss.'' On your ``can we test this'': it is the
+adversarial-recall measurement already queued as item (2) of the
+Sec.~VII measurement plan, noted in violet in place.
+{\bf (4)} \emph{Sec.~III restructure, per your boxes and our
+exchange:} Sec.~III is now the very short ``A Cost Model with One
+Variable'' -- equations, crossings, workload anchors, the
+per-token/compounding argument, and the session-length point. Cut:
+old III-A (redundant with the intro ladder), the dashed-lines
+paragraph, and Table~III (your ``seems redundant''). Folded into the
+intro: 122 runs across seven models. The old subsection labels
+survive as aliases so cross-references resolve. This recovers roughly
+a page toward the six-page target.
+
+\textbf{Hand-markup pass (Aug 28), from your pen on the printed v04
+(abstract, Sec.~I, Sec.~II-A, part of Sec.~III; Sec.~II-C untouched
+per your note):}
+{\bf (1)} \emph{Blue, applied verbatim:} the abstract parentheticals,
+``aforementioned defense,'' ``for a whole-vocabulary readout,'' ``On a
+GPU,''/``so if,'' the CAM sentence rewrite, and the {\bf (1)}/{\bf
+(2)} workload numbering; in Sec.~I the period/``Only'' edit, ``All of
+said outcomes were found retrospectively,'' ``(random chance),'' the
+ladder rung rewrites (``captures,'' ``is indicative of the above
+campaign,'' ``-- i.e.,'' twice, ``is representative of,'' ``and it
+is''), ``Finally, $K$ could grow even higher...two orders of magnitude
+higher than the J-space,'' ``That said, we cross...well before this.
+Per Fig.~1(b),'' and ``Our contributions include''; in Sec.~II-A the
+``Two choices'' sentence and both bold lead-ins deleted, ``and can
+measure Hamming distance,'' and ``With appropriate peripheral
+circuitry we can measure.'' Two verbatim applications carry violet
+notes where the marked wording leaves a gap (the abstract's ``in
+memory...in the memory array itself'' doubling; the verbless ``Only
+flagged exchanges escalated'').
+{\bf (2)} \emph{Pink, written for you:} the opener is now ``Recent
+security evaluations show why such a monitor is needed''; ``cascade's''
+is ``defense's''; the 22-of-32 sentence carries the two-thirds
+reading; the clean-text sentence now says each message can read as
+routine while the sequence is an attack; the lie-detector sentence is
+``miss deception carried by technically true statements''; the
+highlighted $K$/coverage sentence is rewritten (each
+behavior--domain--layer combination is one more stored row); and the
+CAM-proposal paragraph now names near-term SRAM \cam{}s and
+emerging-device \cam{}s.
+{\bf (3)} \emph{The new panel:} Fig.~1 is now (a)+(b) --
+(b) is the bandwidth-consumption plot you sketched on Table~II
+(limiting $K$ vs token rate, 100\% lines for H100/A100/Thor, 10\%/1\%
+H100 guides, the whole-vocabulary point marked). The old Table~II is
+retired; its 25-layer numbers survive in the Sec.~III-B text. On your
+batch question: the token rate is the part's aggregate rate, so
+batching moves a deployment along the axis rather than adding one --
+said in the caption, with per-request amortization left to red-team
+objection (3).
+{\bf (4)} \emph{Orange:} the spider example is a footnote; the four
+cell names and exact/threshold are bold (\emph{best} left italic --
+flagged in place for your call).
+
+\textbf{Intro expansion (Aug 26 pm), per your note that readers should
+quickly care:} the intro gains roughly half a column in three beats.
+{\bf (1)} The security problem: the long-autonomous-operation framing
+($10^{8}$-token runs, 22 of 32 steps), the four unsanctioned-action
+categories from the AISI campaign stated in full, and that all of it
+was found retrospectively with nothing watching internal state --
+clean text, unclean operation. {\bf (2)} The deception work: probes
+recover truth-related structure but the directions are narrow (chance
+on sycophancy; non-lying deception missed; the Schmidt program), which
+is what multiplies $K$. {\bf (3)} J-space: the rung now carries the
+spider example and the staged-safety-test catch, so the reader meets
+the workload before Sec.~VI; Sec.~VI-A points back at the example
+instead of repeating it. Abstract + intro is now roughly 2.3 columns;
+the two candidate cuts from the earlier accounting still stand if you
+want some of that back.
+
+\textbf{What changed in v04 (Aug 26), against your new flags on 00--04
+and your note that the abstract is essentially the intro:}
+{\bf (1)} The abstract is culled to roughly half a column: the ladder
+compressed to one sentence, the $10^{3}$-rung examples, the
+2.1~GB/1{,}600~tokens/s arithmetic, the maturity-ladder recitation,
+and the firing-F1 number all moved out (each survives in the intro or
+Secs.~III/VI--VII). Your ``support this search'' and ``albeit with
+potentially lower'' edits are kept.
+{\bf (2)} The intro is rebuilt from the abstract at about one column:
+your STAR-A material (what the $K=1$ check stores, compares,
+escalates) folded in right after the opening, ending with the point
+that the probe is a small share even of the cascade's 1--3.5\%; the
+``related work suggests $K$ is growing'' framing is the transition
+paragraph, with the Schmidt reference kept to one clause; the ladder
+is one bold clause per rung, with the $10^{3}$ rung carrying the four
+behavior categories and the domains~$\times$~layers arithmetic, and
+the $1.3\!\times\!10^{5}$ rung now carrying the J-space lead-in you
+asked for (what the readout method does, with the citation). The probe
+cost arithmetic ($2Ld$, the MoE point), the 23.7\% $\to$ 1--3.5\%
+progression, and the reconciliation all moved to Sec.~II-C.
+\textbf{Length accounting:} abstract + intro text lands at roughly
+1.8 columns (abstract $\sim$0.5, intro $\sim$1.3), against your
+``about 1.5 at most.'' The remaining 0.3 column comes out of content
+you asked to add, so I stopped rather than choosing: the two candidate
+cuts are (a) the $K\!\approx\!10^{7}$ rung and the crossing sentence
+(both survive in Sec.~III), or (b) the contribution clauses' numbers.
+Say which and it is a five-minute change.
+{\bf (3)} Sec.~II is restructured per your flag: II-A the \cam design
+space, II-B a technology-implementations placeholder seeded with the
+BEOL material and marked for your content, II-C preliminaries (the
+probe/\auroc/domain-behavior material, trimmed) plus related work.
+{\bf (4)} Sec.~III-D (``What would keep the library small'') is cut
+from the body and expanded into a red-team appendix (new file 09),
+which also absorbs the ANN objection and the batch-amortization
+caveat, each stated with a response. The intro no longer carries the
+counter-evidence footnote.
+{\bf (5)} The tok/s reality check is in Sec.~III-B: reported aggregate
+serving throughputs for 70B-class models are of order $10^{3}$
+tokens/s per datacenter GPU at high batch, tens per interactive user,
+so the 10--$10^{4}$ bracket spans deployed practice
+(gray-literature benchmark cite, flagged for replacement if you have
+the interconnect number). [Aug 28: the old Table II is now retired in
+favor of Fig.~1(b), per your pink note.]
+{\bf (6)} Sec.~IV opens with a maturity-order lead-in (Euclidean
+ideal first, then nearer-term CMOS), and the audit-table caption now
+says it is the sanity check against ``cheating.''
+
+\textbf{Abstract pass (Aug 26), against your in-file edits and flags:}
+{\bf (1)} Your edits are kept (the Anthropic-named opener, ``target
+$K$'s are rapidly increasing,'' the softened transfer claim), with the
+stray punctuation cleaned up. {\bf (2)} The $K\!\approx\!10^{3}$ rung
+no longer carries a date: it now names the application -- unsanctioned
+agent behaviors from cyber-security evaluations, with two concrete
+examples -- and states the behavior $\times$ domain $\times$ layer
+multiplication. {\bf (3)} ``Consume a deployed part'' is now ``the
+monitor's memory traffic alone can exceed the bandwidth of the part it
+runs on.'' {\bf (4)} The \cam is introduced as a proposal first (``We
+propose to perform this search with \cam{}s''), then framed per your
+note: the distance function is computed in the memory array itself, so
+the streaming traffic and the GPU bandwidth loss are eliminated,
+albeit at lower precision and with potentially lower-fidelity distance
+functions. {\bf (5)} The 0.920/0.919/0.928 recitation is unpacked: the
+0.928 is named as the full-precision cosine ceiling, the two codes are
+stated against it, and the sentence now says what the compression
+ratio is (${>}300\times$ per signature). J-space is named in the
+abstract and its readout result now includes the firing-F1 number
+(0.81) alongside top-1 (0.96). {\bf (6)} One inconsistency fixed: the
+abstract said 3--5 orders of magnitude for the energy gap; Sec.~VII's
+estimate is five to six, and the abstract now matches.
+
+\textbf{What changed in v03 (Aug 25), against your markup on 00 and 01
+and the follow-up requests:}
+{\bf (1)} Title is option (2) from your note, as you leaned.
+{\bf (2)} The $K$ ladder is explicit and bold -- $K=1$,
+$K\!\approx\!10^{2}$, $10^{3}$, $1.3\!\times\!10^{5}$, $10^{7}$ -- in
+the abstract (compressed), Sec.~I (full, one rung per sentence), and
+Sec.~III (with the arithmetic). The $10^{7}$ rung carries the
+``usable slice TBD'' qualifier inline, per your note.
+{\bf (3)} Figs.~1 and 2 are merged: fig\_ladder\_v1 keeps the
+trajectory figure's look, adds a right-hand axis reading the same
+positions as GPU traffic in GB/s, the two bandwidth ceilings, and the
+flat \cam line. It sits in the intro as Fig.~1 and is referred to
+there. The old full-width traffic figure is retired from placement
+(still in gen\_paper\_figs.py), which recovers roughly a third of a
+page.
+{\bf (4)} Sec.~I now describes what the deployed $K=1$ check stores,
+compares, and escalates, in plainer language; the overhead progression
+is flipped (23.7\% $\to$ 1--3.5\% $\to$ $\sim$0.001\%) and the
+1--3.5\% vs.\ $10^{-5}$ tension is reconciled in a footnote -- the
+$10^{-5}$ is the probe arithmetic alone, the 1--3.5\% is the deployed
+cascade -- with an orange DO-THIS flag to verify that reading against
+the papers.
+{\bf (5)} Related work on deception detection is consolidated with two
+additions: the lie-detector-limits preprint (probes trained on lying
+miss non-lying deception) and the Schmidt Sciences interpretability
+program on detecting deceptive reasoning. Both entries are in
+refs.bib with URLs; they were found and checked Aug 25.
+{\bf (6)} Sec.~II now has a BEOL paragraph (Dutta IEDM 2020 monolithic
+3D multi-bit \fefet; BEOL AlScN/2D-channel FeFETs) and Sec.~VII's
+placement table points at it.
+{\bf (7)} Per your answer that the POC results are the \auroc data,
+the new quantitative cost case in Sec.~VII-E is a first-order
+energy/latency estimate from literature figures -- HBM at
+$\sim$4~pJ/bit (O'Connor, MICRO 2017) against \cam search at
+0.1--1~fJ/cell (Ni 2019; Eva-CAM validation values) -- presented with
+the sensitivity argument (a 10$\times$ error in the cell figure moves
+nothing qualitative) and a near-term measurement plan: Eva-CAM runs at
+a stated node for our exact row widths, a tuned GEMV/FAISS GPU
+baseline at batch 1 and 64, and the matched-cell-count experiment.
+Eva-CAM is the group's own DATE 2022 tool, so the runs are days, not
+months.
+{\bf (8)} Contribution (2) is reframed as the maturity ladder;
+contribution (3) is prose and claims the two reproductions, per your
+note on the framing check.
+
+\textbf{Open items carried over from v02, still open:}
+
+\textbf{1. Matched cell count, ternary vs.\ thermometer.} Unchanged:
+at matched 384 bits ternary wins cross-domain, but a ternary cell may
+cost two bits of hardware, so the fair experiment is matched cell
+count. Still the single most useful add before submission.
+
+\textbf{2. The 2,048-bit grids are summarized, not shown.} Unchanged;
+Sec.~V reports the aggregate counts only.
+
+\textbf{3. J-space numbers are digitized.} Unchanged: Fig.~7 panels
+were read off the 07-30-26 deck charts to $\pm$0.02, and the
+library-size sweep carries its three stated limitations. Getting the
+arrays from John, or the re-run, is still the highest-value item.
+
+\textbf{4. References.} Block 2 of refs.bib still needs its
+verification pass. New in v03 and checked against sources on Aug 25:
+oconnor2017fgdram, liu2022evacam, dutta2020m3dfefet, schmidt2026interp,
+berger2026liedetector. Added but needing an author-list check:
+kim2023alscn.
+
+\textbf{5. Length.} v03 retires one full-width figure and the draft is
+still long. Next cuts, in order: Sec.~II-C (related work), Sec.~VI-C,
+Table~\ref{tab:devices}.
+
+\textbf{6. Camera-ready.} Author order (I.~Bera first?) and funding
+text still to settle; the draft stays anonymized.
+\end{pnote}
+}
+
+\end{document}

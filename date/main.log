@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.9.11)  16 SEP 2026 15:28
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2026.9.11)  16 SEP 2026 15:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1049,35 +1049,30 @@ Underfull \hbox (badness 5417) in paragraph at lines 175--179
 pute-in-
  []
 
-<figures//fig_ladder_v3.pdf, id=172, 245.718pt x 158.99399pt>
+<figures//fig_ladder_v3.pdf, id=165, 245.718pt x 158.99399pt>
 File: figures//fig_ladder_v3.pdf Graphic file (type pdf)
 <use figures//fig_ladder_v3.pdf>
-Package pdftex.def Info: figures//fig_ladder_v3.pdf  used on input line 247.
+Package pdftex.def Info: figures//fig_ladder_v3.pdf  used on input line 225.
 (pdftex.def)             Requested size: 245.71754pt x 159.00085pt.
-
-Underfull \hbox (badness 2809) in paragraph at lines 257--275
-[]\OT1/ptm/m/n/10 We pro-pose to sup-port this search with a content-
- []
-
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
-] [2 <./figures//fig_ladder_v3.pdf>]
-<figures//fig_grids_v3.pdf, id=385, 505.89pt x 166.22101pt>
+ <./figures//fig_ladder_v3.pdf>] [2]
+<figures//fig_grids_v3.pdf, id=368, 505.89pt x 166.22101pt>
 File: figures//fig_grids_v3.pdf Graphic file (type pdf)
 <use figures//fig_grids_v3.pdf>
-Package pdftex.def Info: figures//fig_grids_v3.pdf  used on input line 532.
+Package pdftex.def Info: figures//fig_grids_v3.pdf  used on input line 523.
 (pdftex.def)             Requested size: 505.89pt x 166.22311pt.
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 5
-52.
+43.
  (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 ) [3]
 [4 <./figures//fig_grids_v3.pdf>]
-<figures//fig_jspace_v2.pdf, id=478, 245.718pt x 130.086pt>
+<figures//fig_jspace_v2.pdf, id=463, 245.718pt x 130.086pt>
 File: figures//fig_jspace_v2.pdf Graphic file (type pdf)
 <use figures//fig_jspace_v2.pdf>
-Package pdftex.def Info: figures//fig_jspace_v2.pdf  used on input line 723.
+Package pdftex.def Info: figures//fig_jspace_v2.pdf  used on input line 714.
 (pdftex.def)             Requested size: 245.71754pt x 130.09161pt.
  [5 <./figures//fig_jspace_v2.pdf>] [6]
 (./main.bbl
@@ -1097,17 +1092,17 @@ k / blog /
  []
 
 
-Underfull \hbox (badness 3769) in paragraph at lines 139--143
+Underfull \hbox (badness 3769) in paragraph at lines 107--111
 []\OT1/ptm/m/n/8 GSI Tech-nol-ogy, ``Gem-ini apu: En-abling high-
  []
 
 
-Underfull \hbox (badness 1546) in paragraph at lines 172--176
+Underfull \hbox (badness 1546) in paragraph at lines 154--158
 \OT1/ptm/m/n/8 ond: 2026 bench-marks,'' On-line bench-mark roundup,
  []
 
 
-Underfull \hbox (badness 4859) in paragraph at lines 189--192
+Underfull \hbox (badness 4859) in paragraph at lines 171--174
 []\OT1/ptm/m/n/8 ``A dual-mode 1FeFET-1C em-bed-ded mem-ory: Char-ac-ter-i-za-t
 ion,
  []
@@ -1129,42 +1124,38 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: DCF674BFC8EDD70895CF47050E85C740;6060.
  ) 
 Here is how much of TeX's memory you used:
- 33358 strings out of 480247
- 701597 string characters out of 5896151
- 979481 words of memory out of 5000000
- 50667 multiletter control sequences out of 15000+600000
- 515979 words of font info for 121 fonts, out of 8000000 for 9000
+ 33333 strings out of 480247
+ 701290 string characters out of 5896151
+ 977240 words of memory out of 5000000
+ 50655 multiletter control sequences out of 15000+600000
+ 513222 words of font info for 112 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  95i,16n,102p,666b,755s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmbsy10.pfb></usr/share/texlive/tex
-mf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dis
-t/fonts/type1/public/amsfonts/cm/cmbx7.pfb></usr/share/texlive/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmmib10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10
-.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></u
-sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share
-/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/font
-s/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.p
-fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pf
-b></usr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share
-/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texlive/texmf-dist/fonts/typ
-e1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/ut
-mri8a.pfb>
-Output written on main.pdf (7 pages, 396329 bytes).
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr5.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></us
+r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/
+texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texliv
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/share/texlive/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/texlive/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/ams
+fonts/symbols/msbm10.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/courier
+/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/f
+onts/type1/urw/times/utmri8a.pfb>
+Output written on main.pdf (7 pages, 361414 bytes).
 PDF statistics:
- 743 PDF objects out of 1000 (max. 8388607)
- 463 compressed objects within 5 object streams
- 84 named destinations out of 1000 (max. 500000)
+ 708 PDF objects out of 1000 (max. 8388607)
+ 436 compressed objects within 5 object streams
+ 80 named destinations out of 1000 (max. 500000)
  388 words of extra memory for PDF output out of 10000 (max. 10000000)
 

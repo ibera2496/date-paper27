@@ -62,8 +62,15 @@ domain's examples is scored on every other domain's -- the ``stress
 test'' of Sec.~\ref{subsec:Probes}. Activations are taken from
 Llama-3.3-70B-Instruct~\cite{llama3herd}. The evaluation grid has ten
 domains:
-definitional, evidential, fictional, logical, ethics, sycophancy,
-\texttt{repe\_honesty}, roleplay, insider trading, and sandbagging. The
+definitional, empirical, fictional, logical, ethical, sycophancy,
+\texttt{repe\_honesty}, roleplaying, insider trading, and
+sandbagging.\ib{Item 3: our evidential is their empirical and our
+ethics\_\_commonsense is their ethical (same source datasets), so the
+domains are relabeled to the source paper's names here and in
+Fig.~2(d)--(f) (``evid'' $\to$ ``empir''); repe\_honesty is not one of
+theirs and stays. Panels (d)--(f) checked cell by cell against the
+result files: all three are the current 384-b runs (seed 0, 70/30
+split).} The
 first four plus sycophancy correspond to the published
 grid~\cite{ying2026spectrum}; \texttt{repe\_honesty} follows the
 representation-engineering dataset~\cite{zou2023repe}. Within each
@@ -86,14 +93,14 @@ the evaluation case, and layer 33 arrives later in the paragraph with
 the why -- inherited from the source study's tuning, per their
 Sec.~3. Sec.~IV-B now points here instead of introducing the layer
 itself}
-\dt[confirm with I. Bera before submission: (1) that ``evidential'' is
-the same dataset the published grid calls ``empirical,'' and likewise
-ethics/ethical, roleplay/roleplaying and insider\_trd/insider\_trading
-(the published five truth types are
-definitional/empirical/fictional/logical/ethical); (2) whether the
-ternary dead zone was actually enabled in the 384-bit runs, or whether
-the code was binary in practice and ``ternary'' is a label carried over
-from the table headers]{}
+\ib{Item 4: the dead zone was on. The grid script only has a ternary
+encoder (no binary option) and maps the smallest 20\% of projection
+magnitudes in each column to don't-care by default, so the 384-b
+ternary grid is genuinely ternary and the TCAM-cell claims in Secs.~IV
+and V and Table~II stand. One detail still to fix: the don't-care
+threshold for queries is computed from the test batch rather than
+fixed from training; I will switch it to a training-set threshold and
+rerun to confirm the numbers hold.}
 
 \subsection{The grids}
 \label{subsec:Grids}
@@ -134,6 +141,12 @@ The tradeoff: (a) repeats Ying et al.\ and (c) is derivable from
 run on their protocol, with no analog in their paper. A middle path
 is a top row of just (b). Parked for your call}
 
+\ib{Item 6: these four-domain numbers are not from my runs. The
+reference values (1.00/1.00/1.00/0.95) are the Truthfulness Spectrum
+paper's own in-domain results; the measured values and the gaps
+($-0.03$ here, $-0.06$ in the Aug.~14 document) come from the
+undergrads' first pipeline, so I cannot say which of their runs is
+current. All my runs are on the ten-domain grid.}
 The top row also scores the first mapping on its own terms. Against
 the published four-domain baseline, in-distribution \auroc was
 1.00/0.99/1.00/0.95 versus the paper's 1.00/1.00/1.00/0.95, the
@@ -158,7 +171,7 @@ ternary, 384~b) and 0.919 (thermometer, 384~b), against 0.928 for the
 exact rerank. Said differently, replacing full-precision cosine
 similarity over the raw 8{,}192 values with a 384-bit code in a plain
 array costs 0.008--0.009 \auroc. The factual block (definitional,
-evidential, fictional -- all nine cells, transfer included) averages
+empirical, fictional -- all nine cells, transfer included) averages
 0.974 for ternary and 0.942 for thermometer, against the 0.978
 ceiling.\inote[aiviolet]{Sep 2: rewritten in plain English per your
 note, voice rules applied; every number unchanged}
@@ -174,18 +187,20 @@ where in-domain the same compression cost less than 0.01. The
 ordering is the surprise. At this matched 384-bit point, ternary is
 ahead of thermometer by 0.061 \auroc on average and in 63 of 90
 cells, which is the opposite of what a preference for the cheaper
-cell would predict. One caveat keeps the question open: the
-comparison is matched in \emph{bits} but not in \emph{silicon},
-since a ternary cell needs wildcard capability. If a ternary position
-really costs two bits of hardware, a matched-silicon comparison would
-give thermometer roughly twice the code length; that experiment has
-not been run.
-\dt[this is the paragraph to argue about. Options: (1) report both and
-leave it open, as drafted; (2) run the matched-cell-count experiment
-first and lead with whichever wins; (3) lead with thermometer on the
-hardware-simplicity argument and footnote the ternary advantage. I would
-pick (2) if there is student time before the deadline, since a reviewer
-will ask exactly this]{}
+cell would predict. The comparison is matched in \emph{bits} but not
+in \emph{silicon}, however, since a ternary position may cost roughly
+two bits of hardware. At matched cell count -- the thermometer code at
+768~b, 256 directions at 3 bits each, same splits -- thermometer scores
+0.924 in-domain and 0.631 cross-domain: within 0.009 of ternary's
+cross-domain mean, with ternary still ahead in 54 of 90 cells (was 63
+of 90 at 384~b) and the worst off-diagonal cell improving from 0.259
+to 0.319. At matched silicon the two encodings therefore appear to be
+within noise on the mean, with ternary keeping a small cell-wise
+edge.\ib{Item 1: matched-cell-count run, thermometer at 768~b (256
+directions $\times$ 3 bits), same splits as the 384-b runs. Files:
+bits\_grid\_768b\_L4\_m256.csv, matched\_cell\_count.py. This replaces
+the ``that experiment has not been run'' caveat and the orange flag
+that followed it.}
 
 \textbf{The pattern of failure reproduces the published one:} All three
 grids keep the factual block high and put sycophancy near chance from
@@ -201,7 +216,20 @@ logical~$\to$~insider trading for thermometer, and
 \texttt{repe\_honesty}~$\to$~fictional for the rerank
 configurations. The bigger picture is that the accuracy ceiling on
 transfer is set by the representations, not by our compression -- the
-full-precision grid has the same holes, in the same places. Covering
+full-precision grid has the same holes, in the same places. Pooling
+does not change this: a bank built from all ten domains' training
+splits (11{,}278 rows) averages 0.906 (thermometer, 384~b), 0.909
+(ternary, 384~b), and 0.927 (ceiling) across the ten test domains, so
+pooling costs nothing against the per-domain banks, but sycophancy
+stays at 0.63 -- unlike the source study's combined probe, which
+reaches 0.97 there.\ib{Item 2: pooled bank, AUROC per test domain in
+the order defn, empir, fict, logic, ethical, syco, repe, roleplay,
+insider, sandbag -- thermometer-384: 0.936 0.976 0.966 0.803 0.977
+0.627 0.896 0.887 0.997 0.998 (mean 0.906); ternary-384: 0.937 0.976
+0.964 0.747 0.977 0.635 0.936 0.919 0.997 1.000 (mean 0.909); cosine
+ceiling: 0.970 0.996 0.983 0.803 0.983 0.636 0.957 0.941 0.997 1.000
+(mean 0.927). File: combined\_bank.csv (combined\_bank\_auroc.py; it
+also has a leave-one-domain-out row).} Covering
 a behavior suite at this accuracy therefore means storing directions
 for each behavior and domain rather than hoping one direction
 travels, i.e., operating at the library scale this paper
@@ -235,10 +263,10 @@ figure needs to shrink; (a) and (b) carry the claim}
 \caption{The encodings, their measured fidelity on the ten-domain grid,
 and what each needs from a cell. Bank size is for a 4{,}000-row exemplar
 bank at the given code width. The in-domain minimum is sycophancy in
-every row (0.627 / 0.633 / 0.640 / 0.636 top to bottom); the
-cross-domain minimum is 0.259 / 0.226 / 0.219 / 0.220 top to bottom,
-and its cell location varies by encoding
-(Sec.~\ref{subsec:Grids}).}
+every row; the cross-domain minimum is 0.259 / 0.226 / 0.319 / 0.219 /
+0.220 top to bottom, and its cell location varies by encoding
+(Sec.~\ref{subsec:Grids}). $^{*}$Matched cell count against ternary at
+384~b.}
 \label{tab:encodings}
 {\scriptsize\setlength{\tabcolsep}{3.5pt}
 \begin{tabular}{@{}lccll@{}}
@@ -249,6 +277,7 @@ and its cell location varies by encoding
 \midrule
 \signrp ternary, 384\,b       & 0.920 & 0.640 & \tcam, $\sim$16T   & 192\,kB \\
 Thermometer, 384\,b           & 0.919 & 0.579 & BCAM, $\sim$6--10T & 192\,kB \\
+Thermometer, 768\,b$^{*}$      & 0.924 & 0.631 & BCAM, $\sim$6--10T & 384\,kB \\
 Shortlist $+$ rerank          & 0.928 & 0.671 & BCAM $+$ FP unit   & 192\,kB $+$ raw \\
 Exact rerank (ceiling)        & 0.928 & 0.705 & FP baseline        & 65\,MB \\
 \bottomrule
@@ -316,6 +345,26 @@ paying more silicon per row; and {\bf (2)} if transfer must come from
 somewhere, it comes from storing more vectors, not wider ones --
 which is the library growth Sec.~\ref{sec:Scaling} prices.
 
+The same holds for a richer cell once the projection is frozen.
+Keeping everything else fixed -- the same frozen random projection to
+128 values, the same splits and $k=31$ -- and rounding each value to
+eight levels (3 bits), a Euclidean matchline (128 multi-bit cells per
+row) scores 0.920 in-domain and 0.579 cross-domain, against 0.920 and
+0.593 for Hamming distance on the corresponding thermometer code (896
+binary cells per row), and 0.916 and 0.598 for Euclidean on the
+unrounded values; Euclidean is ahead in only 37 of 90 cells, and at
+four levels the two are equal ($-0.003$). Rounding to 3 bits costs
+about 0.02. The accuracy edge of the first pipeline
+(Sec.~\ref{subsec:FirstPipeline}) therefore came from its trained
+projection rather than from its Euclidean matchline; with a frozen
+projection, the multi-bit cell's remaining benefit is fewer cells per
+row.\ib{Item 8(a), the recombination experiment: same splits, same
+frozen random projection to 128 values, same $k=31$ vote, only the
+distance changed. Each of the 128 values rounded to one of 8 levels
+(3 bits); scored three ways -- Hamming (binary CAM; 896 cells per
+row), Euclidean (multi-bit cell; 128 cells per row), and Euclidean on
+the unrounded values as a reference.}
+
 \inote[aiviolet]{Aug 28 night, from the student's files: the 2{,}048-bit
 \emph{ternary} grid exists (slide 2 of his older deck; saved as
 ternary2048.npy), so this $\Delta$ figure per your pick; the worst cell
@@ -345,7 +394,7 @@ sycophancy bank the mean is 18.3\% against a floor of 12.5\%, i.e.,
 barely above chance, and several test domains sit at or below their own
 floor. Consequently, 8 of the 10 training rows are stable between $k=400$
 and full precision while the sycophancy row loses 0.204 \auroc on
-average and up to 0.468 in a single cell; the ethics row shows a smaller
+average and up to 0.468 in a single cell; the ethical row shows a smaller
 version of the same effect at $-0.079$.
 
 Fig.~\ref{fig:shortlist}(b) shows this is a sizing problem rather than a
@@ -411,18 +460,25 @@ and~\ref{subsec:Thermometer} use frozen projections -- with nothing
 trained in front of the array, the failure has nowhere to occur.
 
 The encodings reported above pass. Randomizing every stored
-activation collapses the \signrp grid to a mean of 0.50, with 83\%
-of cells between 0.4 and 0.6, so the classification is coming from
-what is stored rather than from anything in front of the array. An
+activation collapses the 2{,}048-b \signrp grid to a mean of 0.50,
+with 83\% of cells between 0.4 and 0.6, and a label-shuffle control
+at 384~b gives 0.500 for ternary (all 100 cells within 0.40--0.56) and
+0.501 for thermometer (all cells within 0.44--0.57), so the
+classification is coming from what is stored rather than from
+anything in front of the array.\ib{Item 5: the 0.50 / 83\% figures are
+from the 2{,}048-b run, now said so. At 384~b I have the label-shuffle
+audit -- mean 0.500 ternary (all cells 0.40--0.56), 0.501 thermometer
+(0.44--0.57) -- which is a different control from the randomized-bank
+audit; the text states the two separately. If a randomized-bank run at
+384~b is wanted, it is a short rerun.} An
 accuracy number alone would not have separated the five variants of
 Table~\ref{tab:audit} -- the highest-scoring one was the worst
 offender. As such, we now run the audit by default on every
 configuration, report front-end share alongside \auroc, and treat a
 variant whose accuracy survives bank destruction as an accelerator
 result rather than a memory result. The recombined design of
-Sec.~\ref{subsec:PathBack} should pass this audit by construction --
-nothing is trained ahead of its array -- and will be checked the
-same way when it is run.
+Sec.~\ref{subsec:PathBack}, now run (Sec.~\ref{subsec:BitWidth}),
+passes by construction -- nothing is trained ahead of its array.
 
 \inote[aiviolet]{Aug 28 night: verified against the full audit grid in
 the student's older deck (slide 3) -- mean 0.504, 83.0\% of cells in

@@ -81,10 +81,11 @@ inside a plain array holds in-domain \auroc within 0.009 of
 full-precision cosine similarity on the raw 8{,}192 numbers, at 0.920
 (\signrp ternary) and 0.919 (thermometer) against 0.928; cross-domain,
 the same codes give up 0.065 and 0.127. At a matched 384 bits the
-ternary code is ahead of the thermometer code by 0.061 on average, which
-is the opposite of what a preference for the cheaper cell would predict
-and is the experiment we would run next at matched cell count rather
-than matched code length. A two-stage shortlist recovers most of the
+ternary code is ahead of the thermometer code by 0.061 on average, but
+at matched cell count (thermometer at 768~b) the two are within 0.009
+on the cross-domain mean, and a frozen projection on a multi-bit
+Euclidean matchline buys no accuracy over Hamming distance, so on this
+grid the cheaper cell is sufficient.\ib{Items 1 and 8(a).} A two-stage shortlist recovers most of the
 cross-domain gap in aggregate, but its fixed $k$ does not travel across
 bank sizes, which argues for a threshold criterion over a top-$k$ one in
 any array that has to serve banks of different sizes.
@@ -113,8 +114,8 @@ the measured compression and the rest is the substrate
 (Sec.~\ref{subsec:CostModelGap}). A library that is inexpensive to
 hold and expensive to move is the condition under which searching it
 in place is worth the silicon. The remaining work is short and
-specific: Eva-CAM characterization at a stated node and a tuned GPU
-baseline to turn the estimates into measurements
+specific: Eva-CAM characterization at a stated node to turn the array
+estimates into measurements, now that the GPU side is measured
 (Sec.~\ref{subsec:NextMeasurements}), and -- upstream of any hardware
 -- establishing the minimum $K$ that adequate behavioral coverage
 actually requires.
@@ -130,3 +131,6 @@ replaced with Eva-CAM output and a measured GPU baseline; {\bf (4)} the full
 even a small one, so the deception grid is not single-model. Item 1 is
 the one a reviewer could actually catch us on.
 \end{pnote}
+\ib{Sep 17 status on this list: (2) done (Sec.~V-B); (3) half done --
+the GPU baseline is measured, the Eva-CAM runs are not; (1), (4), (5)
+open.}

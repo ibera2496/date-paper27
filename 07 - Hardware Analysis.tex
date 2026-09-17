@@ -116,13 +116,19 @@ at the same storage budget (Sec.~\ref{subsec:JspaceFidelity}). The two
 workloads are asking different questions -- separating two labeled
 classes there, reproducing a specific ranked list here -- and the
 ordering flip is consistent with the readout needing the magnitude
-information that sign codes discard. If the flip survives the two
-checks queued in Sec.~\ref{subsec:NextMeasurements} (matched cell
-count, and a common projection across encodings), it is a design-space
-result: a monitoring engine that has to serve both ends of
+information that sign codes discard. Two of the checks on this are
+now in: at matched cell count the deception-grid ordering is within
+noise (Sec.~\ref{subsec:Grids}), and a common frozen projection on
+the deception grid removes the Euclidean advantage there
+(Sec.~\ref{subsec:BitWidth}), so the flip is a property of the
+readout workload and its trained projection rather than of the cell.
+Whether it survives a common frozen projection on the readout workload
+itself is the remaining check (Sec.~\ref{subsec:NextMeasurements}).
+If it does, a monitoring engine that has to serve both ends of
 Fig.~\ref{fig:ladder} either provisions two cell types or pays for the
-multi-bit cell and serves the small-$K$ workload with it too. If it
-does not survive them, one array serves both. Write endurance appears in
+multi-bit cell and serves the small-$K$ workload with it too; if not,
+one array serves both.\ib{Items 1 and 8(a) feed this paragraph; the
+readout-side common-projection check is still open.} Write endurance appears in
 the table because the bank is rewritten whenever the monitored model is
 updated or the probe layer is re-tuned, which is a per-model-release
 event rather than a per-token one; that is the property that makes an NVM
@@ -149,12 +155,11 @@ SRAM \cam & 1     & SRAM            & --                    & Hamming; any CMOS 
 
 \subsection{A first-order energy and latency estimate}
 \label{subsec:CostModelGap}
-The analysis above is capacity and bandwidth arithmetic. A full cost
-model against a tuned GPU baseline is future work
-(Sec.~\ref{subsec:NextMeasurements}); what can be stated now, from
-published device and memory figures, is a first-order estimate of the
-energy and latency of the search itself, and the gap it indicates is
-wide enough to survive considerable error in the inputs.
+The analysis above is capacity and bandwidth arithmetic. What can be
+stated from published device and memory figures is a first-order
+estimate of the energy and latency of the search itself; a measured
+GPU baseline is reported below it, and the gap between the two sides
+is wide enough to survive considerable error in the inputs.
 
 On the GPU side, the dominant energy term at large $K$ is reading the
 bank out of DRAM. Measured HBM2 access energy is approximately
@@ -199,9 +204,30 @@ batch 64. Fabricated and modeled TCAM arrays report search times of
 in parallel and mismatch counts reduced in a tree, a whole-bank search
 plausibly completes in tens of nanoseconds, and even at 100~ns it sits
 two orders under the amortized floor and roughly four under the
-batch-1 floor. Table~\ref{tab:costmodel} carries these entries, marked
-as estimates, alongside the rows this paper measures and the rows that
-remain open.
+batch-1 floor.
+
+\textbf{A measured GPU baseline:} On an H100 PCIe, scanning the raw
+fp16 bank at 131K rows with the $k=31$ top-$k$ included and board
+power sampled during the timed loop costs 1.22~ms and 277~mJ per token
+at batch~1, and 21~$\mu$s and 4.7~mJ per token at batch~64. Achieved
+bandwidth was 1.6--1.8~TB/s, about half of the part's specification,
+so the $K\!\approx\!204$K crossing of Sec.~\ref{sec:Scaling} is
+closer to 107K in practice. Compression also helps the GPU, and the
+comparison should say so: the same 384-bit codes the \cam holds,
+searched on the GPU with a population-count kernel (FAISS), cost
+28~$\mu$s and 2.1~mJ per token at batch~1 (0.45~mJ above idle) and
+0.5~$\mu$s and 0.04~mJ at batch~64, flat in $K$ from $10^{3}$ to 131K
+rows -- the scan itself is under 30~$\mu$s, and the GPU sits at about
+3\% of its per-token budget at $10^{3}$~tokens/s. What the array
+offers over that baseline is the search energy itself
+(0.03--0.3~$\mu$J against 40~$\mu$J--2~mJ per token per layer) and
+freedom from contention with live inference, rather than bandwidth
+relief alone. Table~\ref{tab:costmodel} carries these entries, the
+\cam rows marked as estimates, alongside the rows that remain
+open.\ib{Item 8(b): two H100 PCIe baselines, each including the $k=31$
+top-$k$, at $K$ up to 131K and batch 1 and 64, board power sampled
+during the timed loop. Framing of the popcount result is for MN to
+confirm.}
 
 \begin{table}[t]
 \centering
@@ -210,7 +236,8 @@ entries. \textsc{est} marks first-order values from literature figures
 (HBM at 3.97~pJ/bit~\cite{oconnor2017fgdram}; \cam cells at
 0.1--1~fJ/search~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam}),
 at $K=1.3\!\times\!10^{5}$, 2{,}048-bit rows, per token per layer.
-\textsc{tbd} entries require the measurements of
+\textsc{meas} marks measurements on one H100 PCIe at batch 1 / batch
+64; \textsc{tbd} entries require the measurements of
 Sec.~\ref{subsec:NextMeasurements}.}
 \label{tab:costmodel}
 {\scriptsize\setlength{\tabcolsep}{3pt}
@@ -219,11 +246,13 @@ Sec.~\ref{subsec:NextMeasurements}.}
 \textbf{Metric} & \textbf{CAM} & \textbf{GPU} & \textbf{Assumptions} \\
 \midrule
 Energy / search & \makecell[l]{0.03--0.3\,$\mu$J\\\textsc{est}} &
-  \makecell[l]{$\sim$67\,mJ\\\textsc{est}} &
-  cell figure spans published range; GPU is DRAM access only \\
+  \makecell[l]{277 / 4.7\,mJ \textsc{meas}\\($\sim$67\,mJ \textsc{est})} &
+  cell figure spans published range; \textsc{est} is DRAM access only \\
 Latency / search & \makecell[l]{0.3--4.4\,ns/arr.\\\textsc{est}} &
-  \makecell[l]{0.63\,ms\\\textsc{est}} &
-  reduction net.\ open; GPU is the batch-1 streaming floor \\
+  \makecell[l]{1.22\,ms / 21\,$\mu$s \textsc{meas}\\(0.63\,ms \textsc{est})} &
+  reduction net.\ open; \textsc{est} is the batch-1 streaming floor \\
+GPU on 384-b codes & n/a & \makecell[l]{2.1 / 0.04\,mJ; 28 / 0.5\,$\mu$s\\\textsc{meas}} &
+  FAISS popcount, flat in $K$ from $10^{3}$ to 131K \\
 Area / $10^{3}$ rows & \textsc{tbd} & n/a &
   cell type (Table~\ref{tab:camspace}), node \\
 Coverage / mm$^{2}$, / W & \textsc{tbd} & \textsc{tbd} &
@@ -250,21 +279,25 @@ node for exactly the configurations this paper measures -- 384- and
 of Table~\ref{tab:costmodel} with modeled energy, latency and area,
 including the subarray split and the reduction network the footnote
 above leaves open. This is days of work with an existing tool.
-{\bf (2)} \textbf{A tuned GPU baseline:} a cuBLAS GEMV or FAISS
-scan~\cite{faisscuvs2025} over the same banks on an H100 and a
-Jetson-class part, reported at batch 1 and batch 64 with measured
-power, so the amortization a datacenter part enjoys -- and an edge
-part does not -- appears in the table rather than in a caveat. Recall
+{\bf (2)} \textbf{A tuned GPU baseline:} the H100 measurements of
+Sec.~\ref{subsec:CostModelGap} (fp16 scan and FAISS
+popcount~\cite{faisscuvs2025}, batch 1 and 64, measured power) are now
+in Table~\ref{tab:costmodel}; the Jetson-class part remains to be
+measured, so the amortization a datacenter part enjoys -- and an edge
+part does not -- can appear in the table rather than in a caveat.\ib{Item
+8(b) done for the H100; Jetson not measured.} Recall
 for any approximate index should additionally be measured under
 queries chosen \emph{against} the index rather than drawn at random,
 since that is the regime a monitor operates
 in~\cite{andoni2026robustann}.
-{\bf (3)} \textbf{The two fidelity checks the encoding comparison
-still needs:} matched cell count for ternary vs.\ thermometer
-(Sec.~\ref{subsec:Grids}), and a common projection across the Hamming
-and Euclidean encodings on the readout workload, which settles whether
-the cell-type flip of Sec.~\ref{subsec:Devices} is a device result or
-a projection artifact. Both are cluster runs on data already in hand.
+{\bf (3)} \textbf{The fidelity check the encoding comparison still
+needs:} matched cell count (Sec.~\ref{subsec:Grids}) and a common
+frozen projection on the deception grid (Sec.~\ref{subsec:BitWidth})
+are done; a common projection across the Hamming and Euclidean
+encodings on the readout workload remains, and it is what settles
+whether the cell-type flip of Sec.~\ref{subsec:Devices} is a device
+result or a projection artifact. It is a cluster run on data already
+in hand.\ib{Items 1 and 8(a) done; the readout-side run is not.}
 \dt[items (1) and (2) are the preemptive strike for a reviewer asking
 ``is the CAM actually cheaper'': the paper now has the first-order
 numbers, and this list is the credible path to measured ones. If there

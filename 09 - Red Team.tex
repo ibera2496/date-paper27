@@ -33,7 +33,15 @@ to 2{,}048 bits drops 23 of 90 off-diagonal cells by more than 0.05
 \auroc (main paper, Sec.~V-C). If transfer were limited by
 representational capacity, more bits should have helped; that they do
 not is consistent with behaviors wanting their own stored directions,
-i.e., with $K$ growing. That said, this is one model and one grid,
+i.e., with $K$ growing. We have also built the combined row for our
+own banks: pooled over all ten domains' training splits (11{,}278
+rows), the per-domain \auroc averages 0.906 (thermometer, 384~b),
+0.909 (ternary, 384~b), and 0.927 (full-precision ceiling), and
+sycophancy stays at 0.63 -- pooling costs nothing against the
+per-domain banks, but it does not reproduce the combined probe's 0.97
+on sycophancy (main paper, Sec.~V-B).\ib{Item 2: our own combined-row
+numbers, per MN's note that we should report them rather than argue
+around theirs.} That said, this is one model and one grid,
 and whether a shared basis suffices for a behavior suite remains an
 open empirical question; the analysis of this paper is conditional on
 the published trajectory continuing.

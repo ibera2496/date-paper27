@@ -1,0 +1,272 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Hardware Implications}
+\label{sec:Hardware}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% (1) the tax as a share of the host's own traffic, datacenter and edge;
+% (2) the cache cliff, which is where the edge case is already close;
+% (3) where the engine could sit; (4) device candidates; (5) the cost
+% model we have not filled in, stated as such.
+
+\subsection{Monitoring as a share of the host's own traffic}
+\label{subsec:Tax}
+Eq.~(\ref{eq:gputraffic}) is easier to interpret against what the model
+itself already moves. In the datacenter, a 70B model at fp8 reads roughly
+\qty{70}{\giga\byte} of weights per token; a library of $K=100$K rows at
+$d=8{,}192$ adds \qty{1.6}{\giga\byte}, or about 2\%. At the edge, an 8B
+model at 4-bit reads roughly \qty{4}{\giga\byte} per token, and $K=25$K
+at $d=4{,}096$ adds \qty{205}{\mega\byte}, about 5\%, rising to roughly
+20\% by $K=100$K. The same architectural point therefore arrives one to
+two orders of magnitude earlier in $K$ at the edge, on parts that have no
+HBM available at any price. Edge inference is already bandwidth-limited,
+so every monitoring byte trades approximately 1:1 against token rate, and
+the 15--\qty{60}{\watt} envelope makes DRAM energy per bit a first-order
+term rather than a footnote.
+
+\subsection{The cache cliff, and how close current banks are to it}
+\label{subsec:CacheCliff}
+Capacity produces a sharper discontinuity than bandwidth. Consider a
+Jetson-class part: \qty{273}{\giga\byte\per\second} LPDDR5X, roughly
+\qty{4}{\mega\byte} of shared L2 and no HBM~\cite{nvidia_thor}, running
+an 8B assistant onboard and monitoring only the four behaviors observed
+in the campaign of Sec.~\ref{sec:Introduction}. At $d=4{,}096$, fp16, 500
+stored rows is \qty{4.1}{\mega\byte}, which is that shared L2 almost
+exactly. Below the cliff the bank is resident and monitoring is close to
+free; above it the bank streams from LPDDR on every token.
+
+The arithmetic of Sec.~\ref{sec:Introduction} put four behaviors at
+520--1{,}000 rows, and the banks currently in hand are already in that
+range: 47 signatures across 13 layers is roughly 600 rows, and the
+exemplar bank of Sec.~\ref{sec:Results} is about 4{,}000. The fair
+pushback is that at the code widths Sec.~\ref{sec:Results} measured,
+today's banks compress back under the cliff -- 4{,}000 rows at 2{,}048
+bits is about \qty{1}{\mega\byte}. Two qualifications apply. Compression has been validated for detection, not for the
+steering-grade full-precision directions that a correcting monitor would
+need. And the cliff does not move as the library grows: at
+whole-vocabulary scale even the compressed bank is out of cache
+(Fig.~\ref{fig:capacity}). The edge crossing is therefore not purely a
+$10^{5}$ hypothetical; the libraries already in hand sit near the
+threshold.
+
+\subsection{Where the search engine could sit}
+\label{subsec:Placement}
+Table~\ref{tab:placement} lists the placements and what each trades. The
+trade is always the same: how far the query has to travel, and what it
+has to contend with on the way. A monitor co-resident on the inference
+GPU competes with live inference for cache and bandwidth, which is the
+contention the analysis above assumes away and which would need to be
+measured. A back-end-of-line (BEOL) search engine in the metal layers
+above GPU compute keeps the query travel to microns and the library
+nonvolatile and static, so it augments a part already purchased -- but no
+foundry PDK offers BEOL \fefet today, and BEOL RRAM/MRAM at 22/16\,nm is
+the defensible near-term citation
+(the BEOL device work is in Sec.~\ref{subsec:CAMspace}), which makes
+that row a 2030s option and it should be labeled that way.
+\dt[confirm you want the BEOL row in a DATE paper at all. It is the most
+speculative entry in the table and DATE reviewers are less forgiving
+than a sponsor audience. The CXL/appliance row is the one an industrial
+reviewer can price today]{}
+
+\begin{table}[t]
+\centering
+\caption{Placements for a \cam-resident monitor.}
+\label{tab:placement}
+{\footnotesize
+\begin{tabular}{@{}p{0.27\columnwidth}p{0.66\columnwidth}@{}}
+\toprule
+\textbf{Placement} & \textbf{Trade-off} \\
+\midrule
+Co-resident on the inference GPU &
+Contends with live inference for cache and bandwidth; the contention
+term is not in our numbers and could dominate at scale. \\
+Dedicated monitoring GPU(s) &
+Whole GPUs scanning a static table, plus cross-device latency. \\
+\cam or CXL-attached appliance &
+Matches in place, but the query crosses a board-level bus; a separate
+part to build and qualify. \\
+BEOL search engine above GPU compute &
+Query travels microns, no cache contention, nonvolatile static library;
+no PDK support for BEOL \fefet today. \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Device candidates}
+\label{subsec:Devices}
+Table~\ref{tab:devices} lists candidate substrates. The encodings of
+Sec.~\ref{sec:Mapping} matter here because they change which row is
+required. A thermometer code needs only the last row, i.e., no new
+device: a binary SRAM \cam in any CMOS process. The \signrp ternary code
+needs wildcard capability, available in CMOS \tcam at higher area or in a
+2-transistor \fefet cell~\cite{ni2019fetcam}. A multi-bit Euclidean
+matchline is the row that requires a multi-level
+device~\cite{kazemi2021fefetcam}. The two-stage variant would benefit
+from it, as would the first pipeline of Sec.~\ref{subsec:FirstPipeline},
+whose 3-bit Euclidean matching maps directly onto such a cell, and the
+frozen-projection Euclidean design of Sec.~\ref{subsec:PathBack}. The
+multi-bit row therefore stays in the table even though the encodings
+this paper measures do not require it: it is the substrate for the next
+experiment rather than a device the current results depend on.
+
+\textbf{The two workloads may want different cells:} The measured
+results give the multi-bit row a second reason to stay. At a matched
+384 bits the \signrp ternary code is ahead of thermometer on the
+deception grid (Sec.~\ref{sec:Results}), while on the readout workload
+the 3-bit Euclidean code is well ahead of every Hamming-metric encoding
+at the same storage budget (Sec.~\ref{subsec:JspaceFidelity}). The two
+workloads are asking different questions -- separating two labeled
+classes there, reproducing a specific ranked list here -- and the
+ordering flip is consistent with the readout needing the magnitude
+information that sign codes discard. If the flip survives the two
+checks queued in Sec.~\ref{subsec:NextMeasurements} (matched cell
+count, and a common projection across encodings), it is a design-space
+result: a monitoring engine that has to serve both ends of
+Fig.~\ref{fig:ladder} either provisions two cell types or pays for the
+multi-bit cell and serves the small-$K$ workload with it too. If it
+does not survive them, one array serves both. Write endurance appears in
+the table because the bank is rewritten whenever the monitored model is
+updated or the probe layer is re-tuned, which is a per-model-release
+event rather than a per-token one; that is the property that makes an NVM
+bank reasonable here and unreasonable for transformer intermediates.
+
+\begin{table}[t]
+\centering
+\caption{Candidate substrates for the signature bank. Device figures are
+literature values, not our measurements.}
+\label{tab:devices}
+{\footnotesize
+\begin{tabular}{@{}lcccl@{}}
+\toprule
+\textbf{Tech} & \textbf{Bits/cell} & \textbf{Write} & \textbf{Endurance} &
+\textbf{Best fit here} \\
+\midrule
+\fefet   & 2--3   & $\sim$20\,ns    & $>$5$\times$10$^{10}$ & multi-bit Euclidean \\
+ECRAM    & up to 6 & $\sim$200\,$\mu$s & $\sim$10$^{12}$    & static direction bank \\
+RRAM     & 1--3   & sub-$\mu$s      & $\sim$10$^{9}$        & density; wear-leveling \\
+SRAM \cam & 1     & SRAM            & --                    & Hamming; any CMOS fab \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{A first-order energy and latency estimate}
+\label{subsec:CostModelGap}
+The analysis above is capacity and bandwidth arithmetic. A full cost
+model against a tuned GPU baseline is future work
+(Sec.~\ref{subsec:NextMeasurements}); what can be stated now, from
+published device and memory figures, is a first-order estimate of the
+energy and latency of the search itself, and the gap it indicates is
+wide enough to survive considerable error in the inputs.
+
+On the GPU side, the dominant energy term at large $K$ is reading the
+bank out of DRAM. Measured HBM2 access energy is approximately
+3.97~pJ/bit~\cite{oconnor2017fgdram}. At the whole-vocabulary
+operating point -- $K=1.3\!\times\!10^{5}$ rows of fp16 at $d=8{,}192$,
+i.e., the \qty{2.1}{\giga\byte} bank of
+Sec.~\ref{subsec:ReadoutCost} -- reading the bank once is roughly
+\emph{67~mJ per token per layer}, before any arithmetic is charged. On
+the \cam side, the same search is $K$ rows of 2{,}048-bit code compared
+in place, about $2.6\!\times\!10^{8}$ cell comparisons. Published
+figures for binary and ternary \cam search sit in the range of
+0.1--1~fJ per cell per search across CMOS survey data and fabricated
+\fefet arrays~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam},
+which puts the whole-bank search at roughly \emph{0.03--0.3~$\mu$J per
+token per layer} -- five to six orders of magnitude under the DRAM
+read. The gap decomposes into two factors: $64\times$ from the code
+width (2{,}048 bits stored per row against 131{,}072; measured
+fidelity at that compression is what Secs.~\ref{sec:Results}
+and~\ref{sec:LargeK} establish) and $\sim$$4\!\times\!10^{3}$ from the
+substrate (fJ-scale cell comparison against pJ-scale DRAM bit
+movement). As such, even a $10\times$ error in the per-cell figure --
+which spans the published range -- moves the conclusion by one order
+out of five or six. Scaled to a deployment, the same arithmetic at 25
+monitored layers and $10^{3}$~tokens/s is roughly 1.7~kW of DRAM
+access power on the GPU side against tens of milliwatts of array
+search: monitoring at this $K$ is not a workload a deployed part
+absorbs, which is what Fig.~\ref{fig:ladder}(b) says in bandwidth
+terms.\footnote{What the estimate omits, on each side: the GPU figure
+excludes the distance arithmetic itself and any cache reuse across
+batched requests (Sec.~\ref{subsec:NextMeasurements}); the \cam figure
+takes array-level published values, which include matchline and
+sense-amp energy but not the query projection ($\sim$$10^{6}$
+multiply--accumulates per token, negligible at this scale) or the
+mismatch-count reduction across subarrays. These are first-order
+literature values, not our measurements.}
+
+Latency divides the same way. Streaming \qty{2.1}{\giga\byte} at an
+H100's \qty{3.35}{\tera\byte\per\second} is a 0.63~ms floor per token
+per layer at batch~1, or roughly 10~$\mu$s per request amortized at
+batch 64. Fabricated and modeled TCAM arrays report search times of
+0.3--4.4~ns~\cite{liu2022evacam,ni2019fetcam}; with subarrays searched
+in parallel and mismatch counts reduced in a tree, a whole-bank search
+plausibly completes in tens of nanoseconds, and even at 100~ns it sits
+two orders under the amortized floor and roughly four under the
+batch-1 floor. Table~\ref{tab:costmodel} carries these entries, marked
+as estimates, alongside the rows this paper measures and the rows that
+remain open.
+
+\begin{table}[t]
+\centering
+\caption{The cost model: measured rows, first-order estimates, and open
+entries. \textsc{est} marks first-order values from literature figures
+(HBM at 3.97~pJ/bit~\cite{oconnor2017fgdram}; \cam cells at
+0.1--1~fJ/search~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam}),
+at $K=1.3\!\times\!10^{5}$, 2{,}048-bit rows, per token per layer.
+\textsc{tbd} entries require the measurements of
+Sec.~\ref{subsec:NextMeasurements}.}
+\label{tab:costmodel}
+{\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lccp{0.23\columnwidth}@{}}
+\toprule
+\textbf{Metric} & \textbf{CAM} & \textbf{GPU} & \textbf{Assumptions} \\
+\midrule
+Energy / search & \makecell[l]{0.03--0.3\,$\mu$J\\\textsc{est}} &
+  \makecell[l]{$\sim$67\,mJ\\\textsc{est}} &
+  cell figure spans published range; GPU is DRAM access only \\
+Latency / search & \makecell[l]{0.3--4.4\,ns/arr.\\\textsc{est}} &
+  \makecell[l]{0.63\,ms\\\textsc{est}} &
+  reduction net.\ open; GPU is the batch-1 streaming floor \\
+Area / $10^{3}$ rows & \textsc{tbd} & n/a &
+  cell type (Table~\ref{tab:camspace}), node \\
+Coverage / mm$^{2}$, / W & \textsc{tbd} & \textsc{tbd} &
+  behaviors $\times$ layers, at fixed detection rate \\
+Traffic / token & $d b L_{\mathrm{mon}}$ & $K d b L_{\mathrm{mon}}$ &
+  measured here; Eqs.~(\ref{eq:gputraffic}), (\ref{eq:camtraffic}) \\
+Bank capacity & \multicolumn{2}{c}{Fig.~\ref{fig:capacity}} &
+  measured here; code widths from Sec.~\ref{sec:Results} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{The measurements that would replace the estimates}
+\label{subsec:NextMeasurements}
+Each estimate above maps to a specific, short measurement, and the
+tooling for the array side already exists in-house.
+{\bf (1)} \textbf{Array-level characterization with Eva-CAM:} Eva-CAM
+is a circuit/architecture-level evaluation tool for TCAM, MCAM and
+ACAM arrays across NVM technologies, validated against fabricated
+chips to within 6--20\%~\cite{liu2022evacam}. Running it at a stated
+node for exactly the configurations this paper measures -- 384- and
+2{,}048-bit rows, banks of $10^{3}$--$1.3\!\times\!10^{5}$ rows, BCAM,
+\tcam and 3-bit \mcam cells -- would replace the \textsc{est} entries
+of Table~\ref{tab:costmodel} with modeled energy, latency and area,
+including the subarray split and the reduction network the footnote
+above leaves open. This is days of work with an existing tool.
+{\bf (2)} \textbf{A tuned GPU baseline:} a cuBLAS GEMV or FAISS
+scan~\cite{faisscuvs2025} over the same banks on an H100 and a
+Jetson-class part, reported at batch 1 and batch 64 with measured
+power, so the amortization a datacenter part enjoys -- and an edge
+part does not -- appears in the table rather than in a caveat. Recall
+for any approximate index should additionally be measured under
+queries chosen \emph{against} the index rather than drawn at random,
+since that is the regime a monitor operates
+in~\cite{andoni2026robustann}.
+{\bf (3)} \textbf{The two fidelity checks the encoding comparison
+still needs:} matched cell count for ternary vs.\ thermometer
+(Sec.~\ref{subsec:Grids}), and a common projection across the Hamming
+and Euclidean encodings on the readout workload, which settles whether
+the cell-type flip of Sec.~\ref{subsec:Devices} is a device result or
+a projection artifact. Both are cluster runs on data already in hand.
+\dt[items (1) and (2) are the preemptive strike for a reviewer asking
+``is the CAM actually cheaper'': the paper now has the first-order
+numbers, and this list is the credible path to measured ones. If there
+is student time before the deadline, (1) is the highest
+value-per-day]{}
