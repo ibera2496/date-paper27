@@ -214,7 +214,7 @@ said~\cite{anthropic2026workspace}. On a GPU every stored signature
 is read from high-bandwidth memory (HBM) once per monitored token, so
 the monitor's traffic grows linearly in $K$ while its answer stays a
 few bits: at $10^{3}$~tokens/s monitoring alone consumes an H100 at
-$K\!\approx\!204$K and a Jetson-class part at $K\!\approx\!17$K
+$K\!\approx\!204$K and a Jetson-class part at $K\!\approx\!12.5$K
 (Fig.~\ref{fig:ladder}, Sec.~\ref{subsec:CostModel}). At small $K$
 the reads hide under inference latency, but the bytes and the energy
 still move on every token of agent runs that reach $10^{8}$
@@ -226,8 +226,11 @@ tokens~\cite{aisi2026cyber}.
 \caption{Library size $K$ at which monitoring traffic alone
 ($K\,d\,b\,L_{\mathrm{mon}}\,R$ bytes/s, Eq.~(\ref{eq:gputraffic}),
 here at $d=8{,}192$, fp16, one monitored layer) reaches the memory
-bandwidth of an H100, an A100, and a Jetson Thor, against token
+bandwidth of an H100, an A100, and a Jetson AGX Orin, against token
 rate.}
+\dt[regenerate fig\_ladder\_v3 with gen\_cut\_figs.py: the edge
+line is now Orin at 204.8~GB/s (was Thor, 273~GB/s); the script is
+already updated]{}
 \label{fig:ladder}
 \end{figure}
 
@@ -374,8 +377,8 @@ layer and $R=1{,}000$~tokens/s, monitoring traffic reaches an H100's
 entire \qty{3.35}{\tera\byte\per\second}~\cite{nvidia_h100} at
 $K\!\approx\!204$K, an A100's at $K\!\approx\!122$K, and a
 Jetson-class part's
-\qty{273}{\giga\byte\per\second}~\cite{nvidia_thor} at
-$K\!\approx\!17$K. The crossings move with the token rate, a
+\qty{204.8}{\giga\byte\per\second}~\cite{nvidia_orin} at
+$K\!\approx\!12.5$K. The crossings move with the token rate, a
 deployment parameter rather than a property of the monitor, so
 Fig.~\ref{fig:ladder} plots the limiting $K$ across rates from
 batch-1 edge decoding (robot-control policies emit tens to $10^{3}$
@@ -821,26 +824,27 @@ token; $K=100$K rows at $d=8{,}192$ add \qty{1.6}{\giga\byte}, about
 2\%. At the edge, an 8B model at 4-bit reads roughly
 \qty{4}{\giga\byte} per token, and $K=25$K at $d=4{,}096$ adds
 \qty{205}{\mega\byte}, about 5\%, rising to roughly 20\% by
-$K=100$K -- the same point arrives one to two orders of magnitude
-earlier in $K$ on parts with no HBM at any price and a
-15--\qty{60}{\watt} envelope.
+$K=100$K -- the same traffic share arrives about an order of
+magnitude earlier in $K$ on parts without HBM and with a
+15--\qty{60}{\watt} envelope~\cite{nvidia_orin}.
 \textbf{The cache cliff:} A Jetson-class part has roughly
-\qty{4}{\mega\byte} of shared L2~\cite{nvidia_thor}; 500 stored fp16
-rows at $d=4{,}096$ -- the four campaign behaviors over 13 layers --
-is \qty{4.1}{\mega\byte}, that L2 almost exactly; below the cliff
+\qty{4}{\mega\byte} of shared L2~\cite{nvidia_orin}; 500 stored fp16
+rows at $d=4{,}096$ -- four behaviors over ten domains and 13 layers
+(520 rows) -- is \qty{4.1}{\mega\byte}, that L2 almost exactly; below the cliff
 monitoring is close to free, above it the bank streams from LPDDR on
 every token. At the measured code widths today's banks compress back
 under the cliff (4{,}000 rows at 2{,}048 bits is about
 \qty{1}{\mega\byte}), but at whole-vocabulary scale even the
 compressed bank is out of cache.
 
-\subsection{Where the search engine could sit, and on what}
+\subsection{Placement and cell choice for the search engine}
 \label{subsec:Placement}
 \label{subsec:Devices}
 A monitor co-resident on the inference GPU competes with live
-inference for cache and bandwidth; a \cam or CXL-attached appliance matches in place but sends
-the query over a board-level bus; a back-end-of-line search engine
-above GPU compute would keep query travel to microns with a
+inference for cache and bandwidth; a \cam or CXL-attached appliance
+matches in place but sends the query over a board-level bus; a
+back-end-of-line search engine above GPU compute would keep query travel
+to microns with a
 nonvolatile static library, but no foundry PDK offers BEOL \fefet
 today, so it is a 2030s option.
 \dt[MN: confirm you want the BEOL clause in a DATE paper at all; it
@@ -849,15 +853,16 @@ The encodings decide the cell: a thermometer code needs only a
 binary SRAM \cam in any CMOS process; the \signrp ternary code needs
 wildcard capability, in CMOS \tcam at higher area or a two-transistor
 \fefet cell~\cite{ni2019fetcam}; a Euclidean matchline needs a
-multi-level device~\cite{kazemi2021fefetcam}, which the two workloads
-value differently -- no accuracy gain on the deception grid once the
-projection is frozen (Sec.~\ref{subsec:BitWidth}), a clear lead on
-the readout workload (Sec.~\ref{subsec:JspaceFidelity}). Whether that
-lead survives a common frozen projection decides whether an engine
+multi-level device~\cite{kazemi2021fefetcam}, which matters
+differently for the two workloads: it gives no accuracy gain on the
+deception grid once the projection is frozen
+(Sec.~\ref{subsec:BitWidth}), but a clear lead on the readout
+workload on digitized values (Sec.~\ref{subsec:JspaceFidelity}).
+Whether that lead survives a common frozen projection decides whether an engine
 serving both ends of Fig.~\ref{fig:ladder} needs two cell types or
-one. Write endurance is not a constraint: the bank is rewritten per
-model release, not per token, which is what makes an NVM bank
-reasonable here.
+one. Write endurance is not a constraint, since the bank is
+rewritten once per model release rather than on every token, which
+suits an NVM bank.
 
 \subsection{Energy and latency, against a measured GPU baseline}
 \label{subsec:CostModelGap}

@@ -97,7 +97,7 @@ finish(fig, "fig_grids_v3")
 #  rate R, log-log, with straight lines where monitoring traffic
 #  K*R*d*2B equals a stated share of a part's memory bandwidth
 #  (K*R = share*BW/(2d B)). 100% lines for H100 (3.35 TB/s), A100
-#  (2.0 TB/s), Jetson Thor (273 GB/s); 10% and 1% of an H100 as gray
+#  (2.0 TB/s), Jetson AGX Orin (204.8 GB/s); 10% and 1% of an H100 as gray
 #  guides. d = 8,192, fp16, one monitored layer. Marked point: the
 #  whole-vocabulary K = 1.3e5 at 1e3 tok/s. Panel (a) (the K-vs-date
 #  record) and the workload anchor strip were cut 2026-09-16 for
@@ -130,11 +130,11 @@ def linelabel(x, bw, share, lbl, col, fs, above=True):
     y = share * bw * 1e9 / (BYTES_ROW * x) * (1.45 if above else 0.62)
     ax.text(x, y, lbl, fontsize=fs, fontweight="bold", color=col,
             rotation=-25, rotation_mode="anchor", ha="left", zorder=6)
-for bw, col, ls in ((3350.0, RED, "-"), (2000.0, BLUE, "--"), (273.0, GREEN, ":")):
+for bw, col, ls in ((3350.0, RED, "-"), (2000.0, BLUE, "--"), (204.8, GREEN, ":")):
     ax.plot(R, kline(bw, 1.0), color=col, lw=2.0, ls=ls, zorder=5)
 linelabel(1.5e1, 3350.0, 1.0, "100% of H100", RED, 6.0, above=True)
 linelabel(2.6e2, 2000.0, 1.0, "100% of A100", BLUE, 6.0, above=False)
-linelabel(1.5e1, 273.0, 1.0, "100% of Thor", GREEN, 6.0, above=True)
+linelabel(1.5e1, 204.8, 1.0, "100% of Orin", GREEN, 6.0, above=True)
 for share, xl in ((0.10, 6.5e2), (0.01, 1.5e1)):
     ax.plot(R, kline(3350.0, share), color="#787878", lw=1.0, ls=(0, (5, 3)), zorder=3)
     y = share * 3350.0 * 1e9 / (BYTES_ROW * xl) * 0.60
