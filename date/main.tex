@@ -931,22 +931,21 @@ from IB's H100 PCIe runs, Sep 2026]{}
 
 \begin{table}[!t]
 \caption{The cost model at $K = 1.3\times10^5$ rows, per token per layer.
-\textsc{est}: literature figures (HBM at 3.97 pJ/bit~\cite{oconnor2017fgdram};
-\cam cells at 0.1--1 fJ/search~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam});
-\textsc{meas}: one H100 PCIe, batch 1 / batch 64.}
+\cam entries are first-order estimates from literature figures (0.1--1 fJ per
+cell per search~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam}; latency per
+array); GPU entries are measured on one H100 PCIe.}
 \label{tab:costmodel}
 \centering\footnotesize
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
- & \cam & GPU & GPU & GPU \\
- & 2,048 b & fp16 & 2,048 b $\pm$1 & 384 b \\
+ & \makecell{\cam\\2,048 b} & \makecell{GPU\\fp16} & \makecell{GPU\\2,048 b $\pm$1} & \makecell{GPU\\384 b} \\
 \midrule
-Energy / search & 0.03--0.3 $\mu$J & 277 / 4.7 mJ & 256 / 5.6 mJ & 2.1 / 0.04 mJ \\
- & \textsc{est} & \textsc{meas} & \textsc{meas} & \textsc{meas} \\
-Latency / search & 0.3--4.4 ns/array & 1.22 ms / 21 $\mu$s & 0.77 ms / 17 $\mu$s & 28 / 0.5 $\mu$s \\
- & \textsc{est} & \textsc{meas} & \textsc{meas} & \textsc{meas} \\
-Bank / layer & 33 MB & 2.1 GB & 537 MB & 6 MB \\
+Energy, batch 1  & 0.03--0.3 $\mu$J & 277 mJ  & 256 mJ  & 2.1 mJ \\
+Energy, batch 64 & 0.03--0.3 $\mu$J & 4.7 mJ  & 5.6 mJ  & 0.04 mJ \\
+Latency, batch 1 & 0.3--4.4 ns      & 1.22 ms & 0.77 ms & 28 $\mu$s \\
+Latency, batch 64& 0.3--4.4 ns      & 21 $\mu$s & 17 $\mu$s & 0.5 $\mu$s \\
+Bank / layer     & 33 MB            & 2.1 GB  & 537 MB  & 6 MB \\
 \bottomrule
 \end{tabular}
 \end{table}
