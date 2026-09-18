@@ -950,12 +950,17 @@ Bank / layer & 33\,MB & 2.1\,GB & 6\,MB \\
 \textbf{Limitations:} Nothing here competes with a deployed
 classifier; the measured claims concern the fidelity and cost of
 stored-signature matching, one component of the always-on stage of
-Sec.~\ref{sec:Introduction}. Deception is defined as an output that
-contradicts the known correct output; the grid results classify one
-activation per response rather than per token, at one tuned layer of
-one model. The hardware comparison has no contention term, and the
-\cam entries of Table~\ref{tab:costmodel} are literature-based
-estimates.
+Sec.~\ref{sec:Introduction}. The experiments label deception as an
+output that contradicts the known correct output; sycophancy, insider
+trading, and sandbagging are labeled by the source datasets' own
+criteria. The grid results classify one activation per response
+rather than per token, at one tuned layer of one model, on a single
+train/test split. The readout fidelity values are digitized from
+result charts, and the readout's trained projection was not audited.
+The hardware comparison has no contention term, the crossings of
+Fig.~\ref{fig:ladder} use vendor bandwidths, where the measured
+baseline achieved about half of spec, and the \cam entries of
+Table~\ref{tab:costmodel} are literature-based estimates.
 \dt[regenerate Fig.~\ref{fig:jspace} from result files before
 submission -- the plotted values were digitized from the 07-30 deck]{}
 
@@ -965,20 +970,19 @@ at $K=1$ the operation is nearly free, while whole-vocabulary readout
 fixes $K\!\approx\!10^{5}$ per
 layer by construction. Accuracy alone does not establish that a
 memory-based detector is using its memory, and the destroyed-vector
-audit is what moved this work onto frozen
-projections. With them, a 384-bit code holds
-in-domain deception \auroc within 0.01 of full-precision cosine
-similarity and gives up 0.065--0.127 cross-domain -- a gap that
-neither wider codes, a multi-bit cell, nor a pooled bank closes, so
-covering more behaviors means storing more rows -- and a quantized
-Euclidean code at $\sim$$10^{3}$ bits per row reproduces 0.96 of a
-whole-vocabulary readout's top-1 selections. That bank is
-6--\qty{33}{\mega\byte} per layer and fits on a die, and comparing it
-in place is estimated at four to seven orders of magnitude below the
-measured board energy of streaming it from HBM, and roughly two to
-four orders below the above-idle energy of a GPU population-count
-search over the same codes. What
-remains is Eva-CAM characterization at a stated node and, upstream of
+audit moved this work onto frozen projections. With them, a 384-bit
+code holds in-domain deception \auroc within 0.01 of full-precision
+cosine similarity and gives up 0.065--0.127 cross-domain, a gap that
+wider codes narrow but do not close and that neither a multi-bit
+cell nor a pooled bank closes, so covering more behaviors means
+storing more rows. A quantized Euclidean code at $\sim$$10^{3}$ bits
+per row reproduces 0.96 of a whole-vocabulary readout's top-1
+selections. That bank is 6--\qty{33}{\mega\byte} per layer and fits
+on a die; comparing it in place is estimated at four to seven orders
+of magnitude below the measured board energy of streaming it from
+HBM, and roughly two to four orders below the above-idle energy of a
+GPU population-count search over the same codes. What remains is Eva-CAM
+characterization at a stated node and, upstream of
 any hardware, establishing the minimum $K$ that adequate behavioral
 coverage requires.
 % ===== end 08 - Conclusions.tex =====
