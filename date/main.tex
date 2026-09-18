@@ -147,8 +147,8 @@ Cross-Domain Fidelity, and Library-Size Scaling}
 Frontier language model deployments increasingly treat a model's own
 activations as a safety signal: a production jailbreak defense from
 Anthropic scores a single linear probe over residual-stream
-activations on every generated token, at roughly $10^{-3}$~percent
-of forward-pass compute. What is monitored is set by $K$, the number
+activations on every generated token, at roughly $10^{-5}$ of
+forward-pass compute. What is monitored is set by $K$, the number
 of stored behavioral signatures each activation is compared against,
 and target $K$'s are increasing rapidly: from $K=1$ in that defense,
 to $10^{2}$--$10^{3}$ once probes are fitted per behavior, domain,
@@ -163,13 +163,17 @@ distance-function fidelity for orders of magnitude less data
 movement. We quantify this trade on two workloads: {\bf (1)} a
 ten-domain cross-domain deception grid over Llama-3.3-70B
 activations, where 384-bit codes hold in-domain \auroc within 0.01
-of the full-precision cosine ceiling at more than $300\times$
-compression per signature; and {\bf (2)} whole-vocabulary readout,
+of the full-precision cosine ceiling and 0.065--0.127 across domains
+at more than $300\times$ compression per signature, with a
+destroyed-vector audit confirming that the stored rows carry the
+classification; and {\bf (2)} whole-vocabulary readout,
 where a quantized Euclidean code at $\sim$$10^{3}$ bits per row
 reproduces 0.96 of the exact readout's top-1 selections. The
 whole-vocabulary bank then occupies 6--\qty{33}{\mega\byte} per
-layer, and its estimated in-array search energy is five to six
-orders of magnitude below streaming the equivalent bank from HBM.
+layer, and its estimated in-array search energy is four to seven
+orders of magnitude below the measured board energy of streaming the
+uncompressed bank from HBM, and two to four orders below a GPU
+population-count search over the same codes.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -260,8 +264,9 @@ cost 0.065--0.127 across domains, a gap that no wider code,
 multi-bit cell, or pooled bank closes. On whole-vocabulary readout, a
 quantized Euclidean code at $\sim$$10^{3}$ bits per row reproduces
 0.96 of the exact top-1 selections, the bank fits in 6--\qty{33}{\mega\byte} per
-layer, and its estimated in-array search energy is five to six orders
-of magnitude below the energy of streaming it from HBM.
+layer, and its estimated in-array search energy is four to seven
+orders of magnitude below the measured board energy of streaming the
+uncompressed bank from HBM.
 % ===== end 01 - Introduction.tex =====
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -467,8 +472,8 @@ of~\cite{kazemi2022hdcfefet}).
 \subsection{Encoding 2: thermometer coding (plain binary CMOS)}
 \label{subsec:Thermometer}
 Quantize each projected dimension into $s$ levels and encode each
-level in unary, so level $q$ becomes $q$ ones followed by $s-q$
-zeros. For two quantized vectors $u,v$,
+level in unary, so level $q$ becomes $q$ ones followed by $s-1-q$
+zeros ($s-1$ bits per dimension; $s=4$ gives the 3 bits used here). For two quantized vectors $u,v$,
 %
 \begin{equation}
 d_{\mathrm{Ham}}\big(\mathrm{therm}(u), \mathrm{therm}(v)\big)
@@ -487,7 +492,10 @@ Hamming distance~\cite{fefet1c2026}, so either encoding could also be
 hosted there, nonvolatile.
 \dt[DAC-thermosensitive.pdf: cite here with its plausible extension
 once the PDF arrives from MN's work machine; also settle the
-fefet1c2026 bib entry's authors before submission]{}
+fefet1c2026 bib entry's authors before submission. Reviewer note:
+``manuscript in preparation'' with no authors is unverifiable and
+reads as a self-citation under double blind; cite a public version or
+drop the 1FeFET-1C sentence]{}
 
 \subsection{The decision rule}
 \label{subsec:Decision}
@@ -518,7 +526,7 @@ retrieval~\cite{faisscuvs2025}.
 \label{sec:Results}
 We first evaluate the mappings on a deception detection workload,
 where the library is set by how many behaviors and domains are
-monitored. The banks here hold 831--3{,}201 exemplars per
+monitored. The banks here hold 201--3{,}201 exemplars per
 domain (11{,}278 pooled), i.e., $K\approx10^{3}$--$10^{4}$ stored
 rows. This is an exemplar count: a bank stores on the order of
 $10^{3}$ rows per domain where a fitted probe stores one direction, so
@@ -547,12 +555,16 @@ labeled honest and deceptive activations is scored on every
 domain's held-out 30\%, including its own. Activations are taken
 from Llama-3.3-70B-Instruct~\cite{llama3herd} at layer 33, the layer
 the source study selected, so that our grids can be compared with
-theirs. The ten domains are definitional,
+theirs in pattern. The detector differs from theirs: exemplar
+$k$-nearest-neighbor voting on last-token activations with one 70/30
+split, against a logistic-regression probe on average-token
+activations with five-fold cross-validation, so cells are not
+comparable one by one. The ten domains are definitional,
 empirical, fictional, logical, ethical, sycophancy,
 \texttt{repe\_honesty}~\cite{zou2023repe}, roleplaying, insider
 trading, and sandbagging; within each domain 70\% of examples form
-the stored bank and 30\% are held out, and banks range from 831 rows
-(definitional) to 3{,}201 (sycophancy).
+the stored bank and 30\% are held out, and banks range from 201 rows
+(roleplaying) to 3{,}201 (sycophancy).
 
 \subsection{The grids}
 \label{subsec:Grids}
