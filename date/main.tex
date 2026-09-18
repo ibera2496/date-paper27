@@ -864,45 +864,49 @@ one. Write endurance is not a constraint, since the bank is
 rewritten once per model release rather than on every token, which
 suits an NVM bank.
 
-\subsection{Energy and latency, against a measured GPU baseline}
+\subsection{Energy and latency against a measured GPU baseline}
 \label{subsec:CostModelGap}
 \label{subsec:NextMeasurements}
 On the GPU, the dominant term at large $K$ is reading the bank out of
-DRAM: at a measured 3.97~pJ/bit for HBM2~\cite{oconnor2017fgdram},
+DRAM: at a published 3.97~pJ/bit for HBM2~\cite{oconnor2017fgdram},
 reading the \qty{2.1}{\giga\byte} whole-vocabulary bank once is
 roughly 67~mJ per token per layer before any arithmetic. A measured
 baseline sits above that: on an H100 PCIe, scanning the fp16 bank
-with the $k=31$ top-$k$ included costs 1.22~ms and 277~mJ per token
-at batch~1 and 21~$\mu$s and 4.7~mJ at batch~64 (at an achieved
+with the $k=31$ top-$k$ included (a conservative choice) costs
+1.22~ms and 277~mJ per token at batch~1, and 21~$\mu$s and 4.7~mJ at
+batch~64 (at an achieved
 1.6--1.8~TB/s, so the $K\!\approx\!204$K crossing of
 Sec.~\ref{subsec:CostModel} is nearer 107K in practice). On the \cam
 side the same search is $K$ rows of 2{,}048-bit code compared in
-place, about $2.6\!\times\!10^{8}$ cell comparisons at the published
+place, about $2.7\!\times\!10^{8}$ cell comparisons at the published
 0.1--1~fJ per cell per search for CMOS and fabricated \fefet
 arrays~\cite{pagiamtzis2006cam,ni2019fetcam,liu2022evacam}: roughly
 0.03--0.3~$\mu$J per token per layer, five to six orders of magnitude
 under the DRAM read. The gap is $64\times$ from the code width
 (2{,}048 stored bits against 131{,}072) and
-$\sim$$4\!\times\!10^{3}$ from the substrate.\footnote{The \cam figure is array-level (matchline and
+$4\!\times\!10^{3}$--$4\!\times\!10^{4}$ from the
+substrate.\footnote{The \cam figure is array-level (matchline and
 sense-amp energy), excluding the $\sim$$10^{6}$-MAC query projection
 and the mismatch-count reduction across subarrays; the 67~mJ
 estimate excludes distance arithmetic and cache reuse, which the
 measured rows include.} Compression also helps the GPU: a
-population-count search (FAISS) over the
-same 384-bit codes costs 28~$\mu$s and 2.1~mJ per token at batch~1
-(0.45~mJ above idle) and 0.5~$\mu$s and 0.04~mJ at batch~64, flat in
-$K$ from $10^{3}$ to 131K rows -- about 3\% of the part's per-token
-budget at $10^{3}$~tokens/s. What the array offers over that
-baseline is the search energy itself, 0.03--0.3~$\mu$J against
-40~$\mu$J--2~mJ, and freedom from contention with live inference,
-rather than bandwidth relief alone. Latency divides the same way:
+population-count search (FAISS) over the 384-bit codes of
+Sec.~\ref{sec:Results} costs 28~$\mu$s and 2.1~mJ per token at
+batch~1 and 0.5~$\mu$s and 0.04~mJ at batch~64 (board energy;
+0.45~mJ and 13~$\mu$J above an idle floor of about 58~W), flat in $K$
+from $10^{3}$ to 131K rows -- about 3\% of the part's per-token time
+budget at $10^{3}$~tokens/s. What the array offers over that baseline
+is the search energy itself, 0.03--0.3~$\mu$J against
+13~$\mu$J--0.45~mJ above idle (roughly two to four orders of
+magnitude), and freedom from contention with live inference, rather
+than bandwidth relief alone. Latency divides the same way:
 \tcam arrays report 0.3--4.4~ns per
 search~\cite{liu2022evacam,ni2019fetcam}, so a whole-bank search with
 subarrays in parallel plausibly completes in tens of nanoseconds,
 against 1.22~ms and 21~$\mu$s measured. Table~\ref{tab:costmodel}
 collects these entries; array-level characterization with
-Eva-CAM~\cite{liu2022evacam} at a stated node is what would replace
-the estimates.
+Eva-CAM~\cite{liu2022evacam} at a stated node would replace the
+estimates.
 \dt[MN: framing check. As written, the popcount baseline makes the
 CAM case rest on search energy and non-contention rather than on
 bandwidth alone -- say if you want it framed differently. Numbers
@@ -970,9 +974,10 @@ covering more behaviors means storing more rows -- and a quantized
 Euclidean code at $\sim$$10^{3}$ bits per row reproduces 0.96 of a
 whole-vocabulary readout's top-1 selections. That bank is
 6--\qty{33}{\mega\byte} per layer and fits on a die, and comparing it
-in place is estimated at four to six orders of magnitude below the
-measured energy of streaming it from HBM, and two to nearly five
-orders below a GPU population-count search over the same codes. What
+in place is estimated at four to seven orders of magnitude below the
+measured board energy of streaming it from HBM, and roughly two to
+four orders below the above-idle energy of a GPU population-count
+search over the same codes. What
 remains is Eva-CAM characterization at a stated node and, upstream of
 any hardware, establishing the minimum $K$ that adequate behavioral
 coverage requires.
